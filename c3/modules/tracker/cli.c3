@@ -13,6 +13,14 @@ $assert CHART_WIDTH > 0 : "a chart needs room for its bars";
 
 excuse { NOT_A_NUMBER }
 
+// What each status command does. Python's CHANGES dict of NamedTuples, and C's table of structs:
+// in C3, enums carry values, so the table is the enum itself.
+enum Change : (String name, Status sets, String changed, String already)
+{
+	DONE { "done", Status.DONE, "Done", "Already done" },
+	UNDO { "undo", Status.TODO, "Undone", "Not done yet" },
+}
+
 // Like Python's input(): shows the prompt, reads one line. An empty line at the end of input.
 fn String ask(String prompt) @private
 {
@@ -41,9 +49,9 @@ fn long? parse_whole_number(String text) @private
 	return negative ? -value : value;
 }
 
-// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
-// 1 no such file or task, 2 used wrongly.
-fn int done_command(String[] words) @private
+// tracker done|undo "title": sets one task's status. Returns the exit code: 0 changed (or already
+// so), 1 no such file or task, 2 used wrongly.
+fn int change_command(Change change, String[] words) @private
 {
 	@pool()
 	{
@@ -57,7 +65,7 @@ fn int done_command(String[] words) @private
 		String title = joined.str_view().trim();
 		if (!title.len)
 		{
-			io::eprintn("Usage: done \"task title\"");
+			io::eprintfn("Usage: %s \"task title\"", change.name);
 			return 2;
 		}
 		String path = env::tget_var("TASKS_FILE") ?? "tasks.txt";
@@ -74,24 +82,27 @@ fn int done_command(String[] words) @private
 			io::eprintfn("No task called \"%s\"", title);
 			return 1;
 		}
-		if (task.is_done())
+		if (task.status == change.sets)
 		{
-			io::printfn("Already done: %s", task.title);
+			io::printfn("%s: %s", change.already, task.title);
 			return 0;
 		}
-		if (catch storage::mark_done(path, task))
+		if (catch storage::set_status(path, task, change.sets))
 		{
 			io::eprintfn("Couldn't write %s", path);
 			return 1;
 		}
-		io::printfn("Done: %s", task.title);
+		io::printfn("%s: %s", change.changed, task.title);
 	};
 	return 0;
 }
 
 fn int main(String[] args)
 {
-	if (args.len > 1 && args[1] == "done") return done_command(args[2..]);   // a second mode
+	if (args.len > 1)                                  // tracker done "title", tracker undo "title"
+	{
+		foreach (change : Change::values) if (args[1] == change.name) return change_command(change, args[2..]);
+	}
 	@pool()
 	{
 		String path = args.len > 1 ? args[1] : env::tget_var("TASKS_FILE") ?? "tasks.txt";

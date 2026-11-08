@@ -42,9 +42,12 @@ fn bool holds(String line, Task* task) @private
 	return @ok(found) && found!!.title == task.title && found!!.status == task.status;
 }
 
-// Rewrites the line holding this task as [done], leaving every other byte of the file alone, then
-// replaces the file safely (write_safely). The old file is untouched if anything fails.
-fn void? mark_done(String path, Task* task)
+<*
+ Rewrites the line holding this task as [todo] or [done], leaving every other byte of the file
+ alone, then replaces the file safely (write_safely). The old file is untouched if anything fails.
+ @require status != OTHER : "only todo and done have one way to be written"
+*>
+fn void? set_status(String path, Task* task, Status status)
 {
 	@pool()
 	{
@@ -67,7 +70,9 @@ fn void? mark_done(String path, Task* task)
 				continue;
 			}
 			out.append(line[:open]);                      // any spaces before the bracket
-			out.append("[done]");
+			out.append("[");
+			out.append(status.word);                      // the word each Status carries
+			out.append("]");
 			out.append(line[close + 1..]);                // the title, tags and line ending
 			changed = true;
 		}

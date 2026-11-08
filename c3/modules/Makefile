@@ -2,8 +2,8 @@
 # and nothing to link by hand. The development build is -O0, C3's safe mode.
 #   make            build/tracker, safe mode, for development
 #   make run        build if needed, then run it here (make run ARGS=work.txt passes arguments)
-#   make check      the contract against build/tracker: the 8 cases, then the 6 done cases
-#   make leaks      a full run and a done run under macOS's leaks tool
+#   make check      the contract against build/tracker: the 8 cases, then 6 done and 6 undo cases
+#   make leaks      a full run, a done run and an undo run under macOS's leaks tool
 #   make release    build/tracker-release: optimised, the safety checks compiled out
 C3C     ?= c3c
 SOURCES := $(wildcard tracker/*.c3)
@@ -23,6 +23,7 @@ run: build/tracker
 check: build/tracker
 	../../contract/run.sh "$(CURDIR)/build/tracker"
 	CASES=done ../../contract/run.sh "$(CURDIR)/build/tracker"
+	CASES=undo ../../contract/run.sh "$(CURDIR)/build/tracker"
 
 # Adds a task, then gives a bad number: the paths that allocate the most. Runs in build/leak-run.
 leaks: build/tracker
@@ -32,6 +33,8 @@ leaks: build/tracker
 		leaks --atExit --quiet -- ../tracker > leaks.txt 2> /dev/null && echo "no leaks" || \
 		{ cat leaks.txt; echo "LEAKS FOUND"; exit 1; }
 	cd build/leak-run && leaks --atExit --quiet -- ../tracker done "  book FLIGHTS " > leaks.txt 2> /dev/null && \
+		echo "no leaks" || { cat leaks.txt; echo "LEAKS FOUND"; exit 1; }
+	cd build/leak-run && leaks --atExit --quiet -- ../tracker undo "  book FLIGHTS " > leaks.txt 2> /dev/null && \
 		echo "no leaks" || { cat leaks.txt; echo "LEAKS FOUND"; exit 1; }
 
 release: build/tracker-release
