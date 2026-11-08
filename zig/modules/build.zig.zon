@@ -1,0 +1,7 @@
+.{
+    .name = .tracker,
+    .version = "0.0.0",
+    .minimum_zig_version = "0.16.0",
+    .fingerprint = 0xac632aafffb764cb,
+    .paths = .{""},
+}
