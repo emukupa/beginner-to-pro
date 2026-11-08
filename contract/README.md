@@ -23,6 +23,7 @@ the case brings), with:
 `done/` holds the done-command cases (chapter 03 onwards):
 `CASES=done contract/run.sh <command...>`. Arguments are one per line in `args`, so a title with
 spaces is one argument.
+`undo/` holds the undo-command cases (chapter 04 onwards): `CASES=undo contract/run.sh <command...>`.
 
 The expected files were recorded from the Python chapter 01 version with
 `RECORD=1 contract/run.sh python3 "$PWD/python/tasks.py"`. Only re-record when the behaviour is

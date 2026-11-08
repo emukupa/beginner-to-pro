@@ -3,6 +3,7 @@
 #   contract/run.sh <command...>          check   e.g. contract/run.sh python3 "$PWD/python/tasks.py"
 #   RECORD=1 contract/run.sh <command...> write the expected files from a reference version
 #   CASES=done contract/run.sh <command...> the done-command cases (chapter 03 onwards)
+#   CASES=undo contract/run.sh <command...> the undo-command cases (chapter 04 onwards)
 # Each case runs in a fresh folder holding tasks.txt (plus the case's own files), with the case's
 # stdin, arguments (one per line in args) and environment (NAME=value, one per line in env).
 # Compared: stdout, stderr, the exit code, and tasks.txt (and any file the case brings) afterwards.

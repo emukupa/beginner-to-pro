@@ -15,6 +15,7 @@ TASKS_FILE=work.txt python3 tasks.py
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/python/01-one-file/start` | `course/python/01-one-file/end` | `video/python-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/python/02-modules/start` | `course/python/02-modules/end` | `video/python-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/python/03-done/start` | `course/python/03-done/end` | `video/python-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/python/04-undo/start` | `course/python/04-undo/end` | `video/python-004` |
 
 Check any version against the contract from the repo root:
 
