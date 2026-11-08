@@ -1,0 +1,19 @@
+# The task tracker split into modules, one file per job, in tracker/.
+#   cargo run                          build, then run it on tasks.txt here
+#   cargo test                         the unit tests inside the modules
+#   cargo build && ../../contract/run.sh "$PWD/target/debug/tracker"     the contract
+#   cargo clippy --all-targets -- -D warnings     the linter: must find nothing
+[package]
+name = "tracker"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# The crate root is tracker/cli.rs, so `mod models;` there means tracker/models.rs.
+[[bin]]
+name = "tracker"
+path = "tracker/cli.rs"
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
