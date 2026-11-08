@@ -51,7 +51,8 @@ goroutines and channels, threads with `Arc<Mutex<_>>` or `mpsc`, `std::jthread` 
 | Chapter | What it adds | Reference |
 | --- | --- | --- |
 | 03 Done | `tracker done "title"` marks a task finished: matching messy titles, rewriting one line of the file, a second mode for the program | Python, then each language |
-| 04 Several files at once | concurrency, as above | Python, then each language |
+| 04 Undo | `tracker undo "title"` sets a task back to todo; done and undo share one table of changes | Python, then each language |
+| 05 Several files at once | concurrency, as above | Python, then each language |
 
 ## Order and why
 
@@ -140,16 +141,16 @@ tools instead of by hope:
 - **Traps:** `math.RoundToEven`; `sort.SliceStable` for tied tags.
 - **Contract:** `go build -o build/tracker ./cmd/tracker && contract/run.sh "$PWD/go/build/tracker"`
 
-### TypeScript on Node (`ts/`)
+### TypeScript on Node (`node/`)
 
-- **01:** `ts/tasks.ts`, run directly by Node's built-in type stripping (no build step).
+- **01:** `node/tasks.ts`, run directly by Node's built-in type stripping (no build step).
   `readline` for prompts. A class hierarchy that maps one-to-one to Python's.
-- **02:** ES modules in `ts/src/`: `export` and `import { Task } from "./models.ts"`,
+- **02:** ES modules in `node/src/`: `export` and `import { Task } from "./models.ts"`,
   `"type": "module"`, and `tsc --noEmit` to check types. `index.ts` re-exports the public names,
   like Python's `__init__.py`.
 - **Traps:** `Math.round` rounds halves up, so the chapter writes a round-half-to-even helper.
   Prompts must be written to stdout without a newline.
-- **Contract:** `contract/run.sh node "$PWD/ts/tasks.ts"`
+- **Contract:** `contract/run.sh node "$PWD/node/tasks.ts"`
 
 ## Per-language folder shape
 

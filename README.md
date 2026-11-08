@@ -3,22 +3,25 @@
 One small program, a command-line task tracker, built from zero in several languages. Every
 language takes the same path:
 
+0. **Concepts.** The language itself, one small lesson per file, before building anything.
 1. **One file.** The whole tracker in a single file, every core feature of the language used for a
    reason.
 2. **Modules.** The same tracker broken into files, each with one job, using that language's
    module system. Nothing about its behaviour changes.
+3. **Done.** A `done "title"` command that marks a task finished in the file itself.
+4. **Undo.** An `undo "title"` command that sets it back, sharing one table with done.
 
 Each step is a video, and each video points at a branch you can check out.
 
-| Language | Folder | 01 One file | 02 Modules |
-| --- | --- | --- | --- |
-| Python | [`python/`](python/) | ready | ready |
-| Safe C | [`c/`](c/) | ready | ready |
-| C3 | `c3/` | planned | planned |
-| C++ | `cpp/` | planned | planned |
-| Rust | `rust/` | planned | planned |
-| Go | `go/` | planned | planned |
-| TypeScript (Node) | `ts/` | planned | planned |
+| Language | Folder | 00 Concepts | 01 One file | 02 Modules | 03 Done | 04 Undo |
+| --- | --- | --- | --- | --- | --- | --- |
+| Python | [`python/`](python/) | ready | ready | ready | ready | ready |
+| Safe C | [`c/`](c/) | ready | ready | ready | ready | ready |
+| C3 | `c3/` | planned | planned | planned | planned | planned |
+| C++ | `cpp/` | planned | planned | planned | planned | planned |
+| Rust | `rust/` | planned | planned | planned | planned | planned |
+| Go | `go/` | planned | planned | planned | planned | planned |
+| TypeScript (Node) | `node/` | planned | planned | planned | planned | planned |
 
 The plan for every language is in [docs/languages.md](docs/languages.md).
 
