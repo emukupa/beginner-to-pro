@@ -1,0 +1,7 @@
+[done] Buy groceries #home
+[todo] Finish quarterly report #work #urgent
+[done.] Call mom #family
+[DONE] Fix login bug #work
+[todo] Book flights #travel #home
+[ todo ] Review pull request #work.
+[todo] Write video script #work #urgent
