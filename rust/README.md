@@ -29,6 +29,7 @@ cargo build && ../../contract/run.sh "$PWD/target/debug/tracker"   # must match 
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/rust/00-concepts/start` | `course/rust/00-concepts/end` | `video/rust-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/rust/01-one-file/start` | `course/rust/01-one-file/end` | `video/rust-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/rust/02-modules/start` | `course/rust/02-modules/end` | `video/rust-002` |
+| [03 Done](chapters/03-done/CHAPTER.md) | `course/rust/03-done/start` | `course/rust/03-done/end` | `video/rust-003` |
 
 VS Code: install the **rust-analyzer** extension. It runs the same checks as `cargo check` as you
 type, so the borrow checker's errors show up before you build.
