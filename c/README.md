@@ -27,6 +27,7 @@ make leaks           # macOS: runs under the leaks tool, which must find nothing
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/c/01-one-file/start` | `course/c/01-one-file/end` | `video/c-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/c/02-modules/start` | `course/c/02-modules/end` | `video/c-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/c/03-done/start` | `course/c/03-done/end` | `video/c-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/c/04-undo/start` | `course/c/04-undo/end` | `video/c-004` |
 
 VS Code: install the recommended **clangd** extension. It reads `compile_flags.txt` and understands
 C23; the repo's `.vscode/settings.json` turns the Microsoft C/C++ extension's IntelliSense off here,
