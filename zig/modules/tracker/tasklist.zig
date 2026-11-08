@@ -17,6 +17,22 @@ pub fn addTasks(a: Allocator, tasks: *std.ArrayList(Task), titles: []const []con
     return added;
 }
 
+// The first task whose title matches, ignoring case and extra spaces: Python's
+// " ".join(title.split()).lower(). A pointer into the list: borrowed, the list still owns the
+// task. null if there isn't one.
+pub fn findTask(a: Allocator, tasks: []const Task, title: []const u8) !?*const Task {
+    var wanted: std.ArrayList(u8) = .empty;
+    var words = std.mem.tokenizeAny(u8, title, parsing.whitespace);
+    while (words.next()) |word| {
+        if (wanted.items.len > 0) try wanted.append(a, ' ');
+        try wanted.appendSlice(a, word);
+    }
+    for (tasks) |*task| {
+        if (std.ascii.eqlIgnoreCase(task.title, wanted.items)) return task;
+    }
+    return null;
+}
+
 pub const TagCount = struct {
     tag: []const u8, // borrowed from a task
     count: usize,
