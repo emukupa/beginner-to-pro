@@ -35,6 +35,7 @@ language.
 | --- | --- |
 | Safe C | `struct` + `typedef struct tag { ... } Name;` for every type; `enum`s for the task kind, the cleaned status (C23 `enum task_status : unsigned char`) and load results; a function pointer as the comparator of a stable, `qsort`-shaped sort; a variadic `[[noreturn]] fail(format, ...)`; C23 `constexpr` for the chart width, default and tag marker, `static_assert` that the fallback is valid, `[[nodiscard]]` on every result that must be checked, `typeof` in one `PUSH` macro that grows any array, `auto`; `static`, `const`, opaque types. A tagged `union` waits for chapter 03, where a command line really can hold one of two things |
 | C3 | structs and enums (with associated values), methods on types, optionals and faults instead of error codes, `@require`/`@ensure` contracts, `defer` for closing files, slices, generic modules for the growable list, macros |
+| Zig | structs with methods; `enum`s with methods and `@tagName`; tagged `union(enum)`; error sets and error unions (`!T`), `try`, `catch`, and `errdefer` beside `defer` for the safe rewrite; optionals (`?T`, `orelse`); slices (`[]const u8`) and `std.mem` for text; explicit allocators passed to every function that allocates, with the debug allocator checking for leaks; `std.ArrayList` and hash maps; `comptime` generics for `topN`; Debug-build safety checks (overflow, bounds, null); `zig build` and `zig fmt` |
 | C++ | classes with `virtual`/`override` for `UrgentTask`; `std::vector<std::unique_ptr<Task>>` for owning polymorphic tasks (`make_unique`), and why not `shared_ptr` here; `enum class Status`; plain `struct TagCount`; a function template `top_n` constrained by a concept; `std::optional` from the parser, `std::expected` from loading; `std::string_view` for parsing without copies; ranges and views to filter urgent tasks; `std::print`/`std::format`; RAII file streams; lambdas; `constexpr`; `operator<<` |
 | Rust | `struct Task`; `enum Status { Todo, Done, Other(String) }` (an enum carrying data) and `enum Kind`; `impl` blocks, `Display` and `FromStr` traits; `Option`, `Result`, `?` and a custom error enum with `From`; `Vec<Task>`, slices, `HashMap` with first-seen order kept in a `Vec`; iterators and closures; a lifetime on `TagCount<'a>` borrowing tag names; `Rc<str>` to share tag names between tasks, and why `Arc` is needed instead once threads arrive; `#![forbid(unsafe_code)]`; `#[test]` |
 | Go | structs; embedding (`UrgentTask` embeds `Task`: Go's answer to inheritance); interfaces (`fmt.Stringer`); value vs pointer receivers; `iota` constants with a `String()` method as Go's enums; slices and maps; multiple returns and error values, sentinel errors, `%w` wrapping and `errors.Is`; `defer`; generics for `TopN[T]`; closures; `sort.SliceStable`; `bufio.Scanner`; goroutines, channels, `select` and `sync.WaitGroup` once there's concurrency; table-driven tests |
@@ -61,14 +62,18 @@ goroutines and channels, threads with `Arc<Mutex<_>>` or `mpsc`, `std::jthread` 
    Python handled quietly (memory, strings, errors) becomes visible, under strict rules.
 3. **C3**: the same model as C, with modules, contracts and optionals built in. Shows what C's
    pain points look like when a language fixes them.
-4. **C++**: classes and inheritance back, like Python, with C's control.
-5. **Rust**: the safety Safe C enforced by rules, now enforced by the compiler.
-6. **Go**: a small language that trades features for simplicity; its compiler refuses import
+4. **Zig**: right after C and C3 on purpose. C cleaned up with `goto cleanup`, C3 with `defer` and
+   `defer catch`; Zig's `defer` and `errdefer`, error unions, explicit allocators (with a debug
+   allocator that reports leaks) and `comptime` are the next step on the same path, still with no
+   hidden control flow and no hidden allocations.
+5. **C++**: classes and inheritance back, like Python, with C's control.
+6. **Rust**: the safety Safe C enforced by rules, now enforced by the compiler.
+7. **Go**: a small language that trades features for simplicity; its compiler refuses import
    cycles outright.
-7. **TypeScript (Node)**: types on top of the language of the web, closing the loop back to a
+8. **TypeScript (Node)**: types on top of the language of the web, closing the loop back to a
    dynamic runtime.
 
-More can join on the same pattern (Zig, Java, C#, Swift) without changing anything that exists.
+More can join on the same pattern (Java, C#, Swift) without changing anything that exists.
 
 ## Language by language
 
@@ -99,14 +104,26 @@ tools instead of by hope:
   `█` is three bytes, so pad labels by characters.
 - **Contract:** `make -C c/one-file check` and `make -C c/modules check`
 
-### C3 (`c3/`)
+### C3 (`c3/`) — built
 
-- **01:** `c3/src/main.c3`, one module. The same data model as Safe C, now with C3's optionals
-  (`?`) for errors and `@require` contracts on functions.
-- **02:** a module per file (`module tracker::models;`, `import tracker::parsing;`), a
-  `project.json` listing the sources, built with `c3c build`.
-- **Traps:** as Safe C.
-- **Contract:** `c3c build && contract/run.sh "$PWD/c3/build/tracker"`
+- **01:** `c3/one-file/tracker.c3`, one module. The same data model as Safe C, with optionals and
+  excuses for errors, `@require` contracts, and the whole run inside one `@pool` (no `free`).
+- **02:** a module per file in `c3/modules/tracker/` (`module tracker::parsing;`), compiled together
+  by `c3c compile` from a Makefile; `@private` for module-private names.
+- **03/04:** `extern fn` for `mkstemp`/`fsync`/`fchmod`, `defer catch` for the safe rewrite; an enum
+  with associated values as the done/undo table.
+- **Contract:** `cd c3/modules && make check`
+
+### Zig (`zig/`)
+
+- **01:** `zig/one-file/tracker.zig`. Structs with methods, error unions and `try`, an allocator
+  passed to everything that allocates, and the debug allocator proving there are no leaks.
+- **02:** a file per module: in Zig a file *is* a struct, imported with `@import("parsing.zig")`;
+  `pub` marks what other files may use. `zig build` builds it.
+- **03/04:** `defer` and `errdefer` for the safe rewrite, the step after C's `goto cleanup` and C3's
+  `defer catch`; a table of changes for done and undo.
+- **Traps:** round half to even by hand or with the right `std.math` call; a stable sort for tied tags.
+- **Contract:** `cd zig/modules && zig build check`
 
 ### C++ (`cpp/`)
 
