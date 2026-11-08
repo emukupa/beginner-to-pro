@@ -15,8 +15,9 @@ fn Status status_of(String word) @private
 	return OTHER;
 }
 
-// The next word of text at or after *i, splitting on any whitespace like Python's split().
-fn String next_word(String text, sz* i) @private
+// The next word of text at or after *i, splitting on any whitespace like Python's split(). An empty
+// String when there are no more. tasklist uses it too, to clean a title the same way.
+fn String next_word(String text, sz* i)
 {
 	while (*i < text.len && text[*i].is_space()) (*i)++;
 	sz start = *i;

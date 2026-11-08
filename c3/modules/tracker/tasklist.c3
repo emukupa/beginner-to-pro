@@ -2,7 +2,7 @@
 module tracker::tasklist;
 import std::sort, std::collections::list, tracker::models, tracker::parsing;
 
-excuse { NO_TOP_TAGS }
+excuse { NO_TOP_TAGS, NO_SUCH_TASK }
 
 struct TagCount
 {
@@ -23,6 +23,25 @@ fn sz add_tasks(List{Task}* tasks, String[] titles, String created, Allocator a)
 		added++;
 	}
 	return added;
+}
+
+// The first task whose title matches, ignoring case and extra spaces: Python's
+// " ".join(title.split()).lower(). Borrowed: the list still owns it. NO_SUCH_TASK if there isn't one.
+fn Task*? find_task(Task[] tasks, String title)
+{
+	@pool()
+	{
+		DString wanted;
+		wanted.tinit();
+		sz i;
+		for (String word = parsing::next_word(title, &i); word.len; word = parsing::next_word(title, &i))
+		{
+			if (wanted.len()) wanted.append(' ');
+			wanted.append(word);
+		}
+		foreach (&task : tasks) if (task.title.compare_to_ignore_case(wanted.str_view()) == 0) return task;
+	};
+	return NO_SUCH_TASK~;
 }
 
 // Every tag with how many tasks carry it, in the order each tag first appears.

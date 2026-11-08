@@ -41,8 +41,57 @@ fn long? parse_whole_number(String text) @private
 	return negative ? -value : value;
 }
 
+// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
+// 1 no such file or task, 2 used wrongly.
+fn int done_command(String[] words) @private
+{
+	@pool()
+	{
+		DString joined;                               // Python's " ".join(words).strip()
+		joined.tinit();
+		foreach (i, word : words)
+		{
+			if (i) joined.append(' ');
+			joined.append(word);
+		}
+		String title = joined.str_view().trim();
+		if (!title.len)
+		{
+			io::eprintn("Usage: done \"task title\"");
+			return 2;
+		}
+		String path = env::tget_var("TASKS_FILE") ?? "tasks.txt";
+		List{Task} tasks;
+		tasks.tinit();
+		if (catch why = storage::load_tasks(path, &tasks, tmem))
+		{
+			io::eprintfn(why == io::FILE_NOT_FOUND ? "Couldn't find %s" : "Couldn't read %s", path);
+			return 1;
+		}
+		Task*? task = tasklist::find_task(tasks.array_view(), title);   // borrowed from tasks
+		if (catch task)
+		{
+			io::eprintfn("No task called \"%s\"", title);
+			return 1;
+		}
+		if (task.is_done())
+		{
+			io::printfn("Already done: %s", task.title);
+			return 0;
+		}
+		if (catch storage::mark_done(path, task))
+		{
+			io::eprintfn("Couldn't write %s", path);
+			return 1;
+		}
+		io::printfn("Done: %s", task.title);
+	};
+	return 0;
+}
+
 fn int main(String[] args)
 {
+	if (args.len > 1 && args[1] == "done") return done_command(args[2..]);   // a second mode
 	@pool()
 	{
 		String path = args.len > 1 ? args[1] : env::tget_var("TASKS_FILE") ?? "tasks.txt";
