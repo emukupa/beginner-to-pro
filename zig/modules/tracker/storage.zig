@@ -4,6 +4,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Io = std.Io;
 const Task = @import("models.zig").Task;
+const Status = @import("models.zig").Status;
 const parsing = @import("parsing.zig");
 
 // Every task in the file; lines that aren't tasks are skipped. error.FileNotFound and friends come
@@ -37,10 +38,17 @@ fn holds(a: Allocator, line: []const u8, task: Task) !bool {
     return std.mem.eql(u8, found.title, task.title) and found.status == task.status;
 }
 
-// Rewrites the line holding this task as [done], leaving every other byte of the file alone. The
-// whole file is written to a new file beside it, then renamed over the old one: a rename is atomic,
-// so the file is never left half-written. On any error the old file is untouched.
-pub fn markDone(a: Allocator, io: Io, path: []const u8, task: Task) !void {
+// Rewrites the line holding this task as [todo] or [done], leaving every other byte of the file
+// alone. The whole file is written to a new file beside it, then renamed over the old one: a rename
+// is atomic, so the file is never left half-written. On any error the old file is untouched.
+pub fn setStatus(a: Allocator, io: Io, path: []const u8, task: Task, status: Status) !void {
+    // A switch must handle every value: add a status to models.zig, and this stops compiling until
+    // it has a spelling. `other` has none, so it's refused before anything is opened.
+    const word = switch (status) {
+        .todo => "todo",
+        .done => "done",
+        .other => return error.NoSpelling,
+    };
     const dir = Io.Dir.cwd();
     const old = try dir.statFile(io, path, .{});
     const data = blk: {
@@ -75,7 +83,7 @@ pub fn markDone(a: Allocator, io: Io, path: []const u8, task: Task) !void {
             continue;
         }
         try out.writeAll(line[0..open]); // any spaces before the bracket
-        try out.writeAll("[done]");
+        try out.print("[{s}]", .{word});
         try out.writeAll(line[close.? + 1 ..]); // the title, tags and line ending
         changed = true;
     }

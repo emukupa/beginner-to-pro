@@ -3,7 +3,7 @@
 //
 //   zig build                  zig-out/bin/tracker
 //   zig build run              build, then run it here (zig build run -- work.txt passes arguments)
-//   zig build check            the contract against it, then the done cases. A leak would print to stderr and fail it.
+//   zig build check            the contract against it, then the done and undo cases. A leak would print to stderr and fail it.
 //   zig build -Doptimize=ReleaseFast    optimised, the safety checks compiled out
 
 const std = @import("std");
@@ -34,5 +34,10 @@ pub fn build(b: *std.Build) void {
     check_done.setCwd(b.path("."));
     check_done.setEnvironmentVariable("CASES", "done");
     check_done.step.dependOn(&check.step);
-    b.step("check", "Run the contract against the tracker: the 8 cases, then the 6 done cases").dependOn(&check_done.step);
+    const check_undo = b.addSystemCommand(&.{"../../contract/run.sh"}); // then the undo cases
+    check_undo.addArg(b.getInstallPath(.bin, "tracker"));
+    check_undo.setCwd(b.path("."));
+    check_undo.setEnvironmentVariable("CASES", "undo");
+    check_undo.step.dependOn(&check_done.step);
+    b.step("check", "Run the contract against the tracker: 8 cases, then 6 done and 6 undo").dependOn(&check_undo.step);
 }

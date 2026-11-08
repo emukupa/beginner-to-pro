@@ -6,6 +6,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const Io = std.Io;
+const models = @import("models.zig");
 const parsing = @import("parsing.zig");
 const storage = @import("storage.zig");
 const tasklist = @import("tasklist.zig");
@@ -57,13 +58,39 @@ fn parseWholeNumber(text: []const u8) error{NotANumber}!i64 {
     return if (negative) -value else value;
 }
 
-// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
-// 1 no such file or task, 2 used wrongly.
-fn doneCommand(a: Allocator, io: Io, out: *Io.Writer, path: []const u8, words: []const []const u8) !u8 {
+// What each status command does. Python's CHANGES dict as an enum: the command words are the
+// values' names, and each answers its questions with an exhaustive switch.
+const Change = enum {
+    done,
+    undo,
+
+    fn sets(c: Change) models.Status {
+        return switch (c) {
+            .done => .done,
+            .undo => .todo,
+        };
+    }
+    fn changed(c: Change) []const u8 {
+        return switch (c) {
+            .done => "Done",
+            .undo => "Undone",
+        };
+    }
+    fn already(c: Change) []const u8 {
+        return switch (c) {
+            .done => "Already done",
+            .undo => "Not done yet",
+        };
+    }
+};
+
+// tracker done|undo "title": sets one task's status. Returns the exit code: 0 changed (or already
+// so), 1 no such file or task, 2 used wrongly.
+fn changeCommand(a: Allocator, io: Io, out: *Io.Writer, change: Change, path: []const u8, words: []const []const u8) !u8 {
     const joined = try std.mem.join(a, " ", words); // Python's " ".join(words).strip()
     const title = std.mem.trim(u8, joined, parsing.whitespace);
     if (title.len == 0) {
-        std.debug.print("Usage: done \"task title\"\n", .{});
+        std.debug.print("Usage: {t} \"task title\"\n", .{change});
         return 2;
     }
     const tasks = storage.loadTasks(a, io, path) catch |err| {
@@ -74,15 +101,15 @@ fn doneCommand(a: Allocator, io: Io, out: *Io.Writer, path: []const u8, words: [
         std.debug.print("No task called \"{s}\"\n", .{title});
         return 1;
     };
-    if (task.isDone()) {
-        try out.print("Already done: {s}\n", .{task.title});
+    if (task.status == change.sets()) {
+        try out.print("{s}: {s}\n", .{ change.already(), task.title });
         return 0;
     }
-    storage.markDone(a, io, path, task.*) catch {
+    storage.setStatus(a, io, path, task.*, change.sets()) catch {
         std.debug.print("Couldn't write {s}\n", .{path});
         return 1;
     };
-    try out.print("Done: {s}\n", .{task.title});
+    try out.print("{s}: {s}\n", .{ change.changed(), task.title });
     return 0;
 }
 
@@ -101,8 +128,10 @@ pub fn main(init: std.process.Init) !u8 {
     const in = &stdin.interface;
 
     const args = try init.minimal.args.toSlice(a);
-    if (args.len > 1 and std.mem.eql(u8, args[1], "done")) { // a second mode: tracker done "title"
-        return doneCommand(a, io, out, init.environ_map.get("TASKS_FILE") orelse "tasks.txt", args[2..]);
+    if (args.len > 1) { // tracker done "title", tracker undo "title"
+        if (std.meta.stringToEnum(Change, args[1])) |change| {
+            return changeCommand(a, io, out, change, init.environ_map.get("TASKS_FILE") orelse "tasks.txt", args[2..]);
+        }
     }
     const path = if (args.len > 1) args[1] else init.environ_map.get("TASKS_FILE") orelse "tasks.txt";
 
