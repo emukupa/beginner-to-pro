@@ -20,7 +20,7 @@ Each step is a video, and each video points at a branch you can check out.
 | C3 | [`c3/`](c3/) | ready | ready | ready | ready | ready |
 | Zig | [`zig/`](zig/) | ready | ready | ready | ready | ready |
 | C++ | [`cpp/`](cpp/) | ready | ready | ready | ready | ready |
-| Rust | [`rust/`](rust/) | ready | planned | planned | planned | planned |
+| Rust | [`rust/`](rust/) | ready | ready | planned | planned | planned |
 | Go | [`go/`](go/) | ready | planned | planned | planned | planned |
 | TypeScript (Node) | [`node/`](node/) | ready | planned | planned | planned | planned |
 

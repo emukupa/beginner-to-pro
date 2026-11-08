@@ -1,0 +1,13 @@
+# The task tracker in one Rust file: src/main.rs.
+#   cargo run                          build, then run it on tasks.txt here
+#   cargo build && ../../contract/run.sh "$PWD/target/debug/tracker"     the contract
+#   cargo clippy -- -D warnings        the linter: must find nothing
+[package]
+name = "tracker"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
