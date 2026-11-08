@@ -29,3 +29,4 @@ zig build check                 # the contract: must match Python byte for byte
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/zig/01-one-file/start` | `course/zig/01-one-file/end` | `video/zig-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/zig/02-modules/start` | `course/zig/02-modules/end` | `video/zig-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/zig/03-done/start` | `course/zig/03-done/end` | `video/zig-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/zig/04-undo/start` | `course/zig/04-undo/end` | `video/zig-004` |
