@@ -27,3 +27,4 @@ make leaks           # macOS: one full run under the leaks tool
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/c3/00-concepts/start` | `course/c3/00-concepts/end` | `video/c3-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/c3/01-one-file/start` | `course/c3/01-one-file/end` | `video/c3-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/c3/02-modules/start` | `course/c3/02-modules/end` | `video/c3-002` |
+| [03 Done](chapters/03-done/CHAPTER.md) | `course/c3/03-done/start` | `course/c3/03-done/end` | `video/c3-003` |
