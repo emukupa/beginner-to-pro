@@ -10,6 +10,7 @@ with Apple clang 21; clang 19+ with libc++ should work too. The Makefiles call `
 | --- | --- | --- |
 | [`concepts/`](concepts/) | one file per concept, run by `main.cpp`: `make` runs them all, `make 07` one, `make 07 BUG=1` with its mistake | 00 |
 | [`one-file/`](one-file/) | the whole tracker in `tracker.cpp` | 01 |
+| [`modules/`](modules/) | the same program split into `tracker/*.hpp` and `tracker/*.cpp` | 02 |
 
 ```bash
 cd cpp/concepts
@@ -19,7 +20,7 @@ make 07 BUG=1        # that lesson's deliberate mistake, caught by the compiler 
 ```
 
 ```bash
-cd cpp/one-file
+cd cpp/one-file      # or cpp/modules
 make check           # the contract: must match Python byte for byte
 make leaks           # macOS: one full run under the leaks tool
 ```
@@ -28,6 +29,7 @@ make leaks           # macOS: one full run under the leaks tool
 | --- | --- | --- | --- |
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/cpp/00-concepts/start` | `course/cpp/00-concepts/end` | `video/cpp-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/cpp/01-one-file/start` | `course/cpp/01-one-file/end` | `video/cpp-001` |
+| [02 Modules](chapters/02-modules/CHAPTER.md) | `course/cpp/02-modules/start` | `course/cpp/02-modules/end` | `video/cpp-002` |
 
 VS Code: install the recommended **clangd** extension. It reads `compile_flags.txt` and understands
 C++23, using the same clang that builds the code.
