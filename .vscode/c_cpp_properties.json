@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Safe C (C23)",
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "compilerArgs": ["-std=c23", "-Wall", "-Wextra", "-Wpedantic", "-Wconversion", "-Wshadow"],
+            "includePath": ["${workspaceFolder}/c/modules/tracker"]
+        }
+    ],
+    "version": 4
+}

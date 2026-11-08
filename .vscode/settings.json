@@ -1,0 +1,7 @@
+{
+    // C23 (constexpr, auto, typeof, typed enums) is read by clangd, the same clang that builds the
+    // code. The Microsoft C/C++ extension's IntelliSense doesn't understand C23 yet, so it's off
+    // here; its debugger still works. clangd reads c/compile_flags.txt.
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.arguments": ["--header-insertion=never"]
+}
