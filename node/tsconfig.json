@@ -1,0 +1,29 @@
+{
+  // Type-checking only: Node runs the .ts files itself by stripping the types, so tsc never
+  // writes any JavaScript (noEmit). `npm run check` is the step that catches mistakes.
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "lib": ["esnext"],
+    "types": ["node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+
+    // Only syntax Node can strip: no enum, namespace or parameter properties (see lesson 09).
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true
+  },
+  "include": ["concepts/**/*.ts"],
+  // The deliberate mistakes and the enum live apart, so the normal check stays clean.
+  "exclude": ["concepts/bugs/lesson_*.ts", "concepts/extras"]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "beginner-to-pro-node",
+  "private": true,
+  "type": "module",
+  "description": "The task tracker course in TypeScript, run directly by Node.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "concepts": "node concepts/main.ts",
+    "check": "tsc --noEmit && tsc --noEmit -p concepts/extras",
+    "test": "node --test",
+    "bug": "node concepts/bugs/check.ts",
+    "enum": "node --experimental-transform-types --no-warnings concepts/extras/status_enum.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2"
+  }
+}

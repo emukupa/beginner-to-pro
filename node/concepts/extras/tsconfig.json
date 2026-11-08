@@ -1,0 +1,8 @@
+{
+  // The one exception to the project's rules: enum isn't erasable syntax, so this folder turns
+  // erasableSyntaxOnly off. Checked by `npm run check` alongside the lessons.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": { "erasableSyntaxOnly": false },
+  "include": ["*.ts"],
+  "exclude": []
+}
