@@ -5,11 +5,38 @@ from datetime import date
 
 from .chart import draw_chart
 from .models import UrgentTask
-from .storage import append_titles, load_tasks
-from .tasklist import add_tasks, summary, top_tags
+from .storage import append_titles, load_tasks, mark_done
+from .tasklist import add_tasks, find_task, summary, top_tags
+
+
+def done_command(words):
+    """tasks.py done "title": marks one task finished. Returns the exit code."""
+    title = " ".join(words).strip()
+    if not title:
+        print('Usage: done "task title"', file=sys.stderr)
+        return 2
+    path = os.getenv("TASKS_FILE", "tasks.txt")
+    try:
+        tasks = load_tasks(path)
+    except FileNotFoundError:
+        print(f"Couldn't find {path}", file=sys.stderr)
+        return 1
+    task = find_task(tasks, title)
+    if task is None:
+        print(f'No task called "{title}"', file=sys.stderr)
+        return 1
+    if task.is_done():
+        print(f"Already done: {task.title}")
+        return 0
+    mark_done(path, task)
+    print(f"Done: {task.title}")
+    return 0
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "done":   # a second mode: tasks.py done "title"
+        sys.exit(done_command(sys.argv[2:]))
+
     if len(sys.argv) > 1:
         path = sys.argv[1]
     else:

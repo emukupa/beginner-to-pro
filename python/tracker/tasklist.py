@@ -13,6 +13,12 @@ def add_tasks(tasks, *titles, status="todo", **extra):
     return added
 
 
+def find_task(tasks, title):
+    """The first task whose title matches, ignoring case and extra spaces; None if there isn't one."""
+    wanted = " ".join(title.split()).lower()
+    return next((task for task in tasks if task.title.lower() == wanted), None)
+
+
 def top_tags(tasks, n=3, *, include_done=True):
     if n < 1:
         raise ValueError("n must be at least 1")
