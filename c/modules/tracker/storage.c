@@ -41,10 +41,15 @@ static bool holds(const char *line, const Task *task) {
     return same;
 }
 
+// The bracket each status is written as. Designated initializers put each one at its enum's index.
+static const char *const BRACKETS[] = {[STATUS_TODO] = "[todo]", [STATUS_DONE] = "[done]", [STATUS_OTHER] = nullptr};
+
 // Copies the file line by line into a new file beside it, changing one line on the way, then
 // renames the new file over the old one. Every way out goes through cleanup, which closes and
 // frees exactly what was opened, and deletes the new file unless it replaced the old one.
-bool mark_done(const char *path, const Task *task) {
+bool set_status(const char *path, const Task *task, TaskStatus status) {
+    const char *bracket = BRACKETS[status];
+    if (bracket == nullptr) return false;  // nothing opened yet, so nothing to clean up
     bool replaced = false, changed = false;
     FILE *in = nullptr, *out = nullptr;
     char *line = nullptr;  // owned; getline grows it as needed
@@ -73,7 +78,7 @@ bool mark_done(const char *path, const Task *task) {
             continue;
         }
         fwrite(line, 1, (size_t)(open - line), out);                // any spaces before the bracket
-        fputs("[done]", out);
+        fputs(bracket, out);
         fwrite(close + 1, 1, n - (size_t)(close + 1 - line), out);  // the title, tags and line ending
         changed = true;
     }

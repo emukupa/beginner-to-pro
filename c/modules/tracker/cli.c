@@ -36,28 +36,46 @@ static_assert(CHART_WIDTH > 0, "a chart needs room for its bars");
     return line;
 }
 
-// What the command line asked for: one of two things, never both. A tagged union: kind says which
-// member of the union holds the data, and only that member may be read.
+// What the command line asked for: tracking, or changing one task's status, never both. A tagged
+// union: kind says which member of the union holds the data, and only that member may be read.
 typedef struct command {
-    enum command_kind { COMMAND_TRACK, COMMAND_DONE } kind;
+    enum command_kind { COMMAND_TRACK, COMMAND_DONE, COMMAND_UNDO } kind;
     union {
         struct {
             const char *path;  // argv[1], else $TASKS_FILE, else tasks.txt
         } track;
         struct {
             const char *path;  // $TASKS_FILE, else tasks.txt
-            char *title;       // owned: the words after "done", joined and stripped; may be empty
-        } done;
+            char *title;       // owned: the words after the command, joined and stripped; may be empty
+        } change;              // COMMAND_DONE and COMMAND_UNDO
     };
 } Command;
+
+// What each status command does. Python's CHANGES dict, as an array indexed by kind: designated
+// initializers put each entry at its kind's index.
+typedef struct change {
+    const char *name;     // the word on the command line
+    TaskStatus status;    // what the task's bracket becomes
+    const char *changed;  // printed after changing it
+    const char *already;  // printed when the task already had that status
+} Change;
+
+static const Change CHANGES[] = {
+    [COMMAND_DONE] = {"done", STATUS_DONE, "Done", "Already done"},
+    [COMMAND_UNDO] = {"undo", STATUS_TODO, "Undone", "Not done yet"},
+};
 
 static Command read_command(int argc, char **argv) {
     const char *path = getenv("TASKS_FILE");
     if (path == nullptr) path = "tasks.txt";
-    if (argc < 2 || strcmp(argv[1], "done") != 0) {
+    enum command_kind kind = COMMAND_TRACK;
+    for (int k = COMMAND_DONE; k <= COMMAND_UNDO; k++) {
+        if (argc > 1 && strcmp(argv[1], CHANGES[k].name) == 0) kind = (enum command_kind)k;
+    }
+    if (kind == COMMAND_TRACK) {
         return (Command){.kind = COMMAND_TRACK, .track.path = argc > 1 ? argv[1] : path};
     }
-    // Python's " ".join(words).strip(): every word after "done", one space between each.
+    // Python's " ".join(words).strip(): every word after the command, one space between each.
     size_t size = 1;
     for (int i = 2; i < argc; i++) size += strlen(argv[i]) + 1;
     char *joined = checked(malloc(size));  // owned, freed below
@@ -70,16 +88,16 @@ static Command read_command(int argc, char **argv) {
     }
     const char *s = joined;
     strip(&s, &len, nullptr);
-    Command command = {.kind = COMMAND_DONE, .done = {.path = path, .title = copy_text(s, len)}};
+    Command command = {.kind = kind, .change = {.path = path, .title = copy_text(s, len)}};
     free(joined);
     return command;
 }
 
-// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
-// 1 no such file or task, 2 used wrongly.
-static int done_command(const char *path, const char *title) {
+// tracker done|undo "title": sets one task's status. Returns the exit code: 0 changed (or already
+// so), 1 no such file or task, 2 used wrongly.
+static int change_command(const Change *change, const char *path, const char *title) {
     if (title[0] == '\0') {
-        fputs("Usage: done \"task title\"\n", stderr);
+        fprintf(stderr, "Usage: %s \"task title\"\n", change->name);
         return 2;
     }
     TaskList *tasks = tasklist_new();
@@ -92,10 +110,10 @@ static int done_command(const char *path, const char *title) {
     } else if (task == nullptr) {
         fprintf(stderr, "No task called \"%s\"\n", title);
         code = 1;
-    } else if (task_is_done(task)) {
-        printf("Already done: %s\n", task->title);
-    } else if (mark_done(path, task)) {
-        printf("Done: %s\n", task->title);
+    } else if (task->status == change->status) {
+        printf("%s: %s\n", change->already, task->title);
+    } else if (set_status(path, task, change->status)) {
+        printf("%s: %s\n", change->changed, task->title);
     } else {
         fprintf(stderr, "Couldn't write %s\n", path);
         code = 1;
@@ -166,9 +184,10 @@ int main(int argc, char **argv) {
     Command command = read_command(argc, argv);
     switch (command.kind) {
         case COMMAND_TRACK: return track_command(command.track.path);
-        case COMMAND_DONE: {
-            int code = done_command(command.done.path, command.done.title);
-            free(command.done.title);
+        case COMMAND_DONE:
+        case COMMAND_UNDO: {
+            int code = change_command(&CHANGES[command.kind], command.change.path, command.change.title);
+            free(command.change.title);
             return code;
         }
     }

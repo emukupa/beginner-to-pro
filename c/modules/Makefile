@@ -1,8 +1,8 @@
 # Safe C build. Every build is strict; `make check` runs the contract under the sanitizers.
 #   make            build/tracker: AddressSanitizer + UndefinedBehaviorSanitizer, for development
 #   make run        build if needed, then run it here (make run ARGS=work.txt passes arguments)
-#   make check      the contract against build/tracker: the 8 cases, then the 6 done cases
-#   make leaks      a full run and a done run under macOS's leaks tool (ASan can't check leaks on macOS)
+#   make check      the contract against build/tracker: the 8 cases, then the 6 done and 6 undo cases
+#   make leaks      a full run, a done run and an undo run under macOS's leaks tool (ASan can't on macOS)
 #   make release    build/tracker-release: optimised, no sanitizers
 # Each module compiles to its own object file, so changing one .c rebuilds only that file, and
 # -MMD records which headers each one includes, so changing a .h rebuilds exactly the files using it.
@@ -38,8 +38,10 @@ run: build/tracker
 check: build/tracker
 	../../contract/run.sh "$(CURDIR)/build/tracker"
 	CASES=done ../../contract/run.sh "$(CURDIR)/build/tracker"
+	CASES=undo ../../contract/run.sh "$(CURDIR)/build/tracker"
 
-# Adds a task, then gives a bad number: the paths that allocate the most. Then marks a task done.
+# Adds a task, then gives a bad number: the paths that allocate the most. Then marks a task done,
+# and undoes it.
 # Runs in build/leak-run.
 leaks: build/tracker-plain
 	mkdir -p build/leak-run
@@ -48,6 +50,8 @@ leaks: build/tracker-plain
 		leaks --atExit --quiet -- ../tracker-plain > leaks.txt 2> /dev/null && echo "no leaks" || \
 		{ cat leaks.txt; echo "LEAKS FOUND"; exit 1; }
 	cd build/leak-run && leaks --atExit --quiet -- ../tracker-plain done "  book FLIGHTS " > leaks.txt 2> /dev/null && \
+		echo "no leaks" || { cat leaks.txt; echo "LEAKS FOUND"; exit 1; }
+	cd build/leak-run && leaks --atExit --quiet -- ../tracker-plain undo "  book FLIGHTS " > leaks.txt 2> /dev/null && \
 		echo "no leaks" || { cat leaks.txt; echo "LEAKS FOUND"; exit 1; }
 
 release: build/tracker-release
