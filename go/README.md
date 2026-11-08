@@ -11,6 +11,7 @@ every command from `go/`.
 | --- | --- | --- |
 | [`concepts/`](concepts/) | one file per concept, run by `main.go`: `go run ./concepts` runs them all, `go run ./concepts 7` one, `go run -tags bug07 ./concepts 7` with its bug | 00 |
 | [`one-file/`](one-file/) | the whole tracker in `main.go` | 01 |
+| [`modules/`](modules/) | the same program split into packages in `internal/`, one per job, with tests | 02 |
 
 ```bash
 cd go
@@ -24,12 +25,15 @@ gofmt -l .           # files that aren't gofmt-formatted: must list nothing
 cd go
 go build -o one-file/build/tracker ./one-file
 ../contract/run.sh "$PWD/one-file/build/tracker"   # the contract: must match Python byte for byte
+go build -o modules/build/tracker ./modules     # the same for modules/
+../contract/run.sh "$PWD/modules/build/tracker"
 ```
 
 | Chapter | Start | End | Video |
 | --- | --- | --- | --- |
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/go/00-concepts/start` | `course/go/00-concepts/end` | `video/go-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/go/01-one-file/start` | `course/go/01-one-file/end` | `video/go-001` |
+| [02 Modules](chapters/02-modules/CHAPTER.md) | `course/go/02-modules/start` | `course/go/02-modules/end` | `video/go-002` |
 
 VS Code: install the official **Go** extension. It runs `gopls`, formats on save with gofmt, and
 shows vet's findings as you type.
