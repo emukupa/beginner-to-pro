@@ -1,0 +1,6 @@
+# The editor opens each lesson on its own, where #pragma once and the lesson's own run function
+# (called only from main.c) look unusual. The real builds (make, make solo-NN) still check everything.
+If:
+  PathMatch: .*lesson_[0-9]+_.*\.c
+CompileFlags:
+  Add: [-Wno-pragma-once-outside-header, -Wno-unused-function]

@@ -7,11 +7,17 @@ lesson per file. `main.c` pulls them all in with `#include` (which pastes each f
 whole thing compiles as one and later lessons can call earlier ones' functions) and keeps them in a
 table of function pointers.
 
+Every lesson starts with `#pragma once` and `#include "concepts.h"` (the standard library, in one
+place), then includes the earlier lessons it borrows from: lesson 10 includes 08 and 09 for `strip`
+and `copy_text`. So any lesson also builds on its own, and `#pragma once` stops a lesson being pasted
+in twice when main.c and a later lesson both include it.
+
 ```bash
 cd c/concepts
 make              # build, then run every lesson
 make 07           # just lesson 7
 make 07 BUG=1     # lesson 7 with its Safe C bug compiled in: watch the tools catch it
+make solo-10      # lesson 10 built alone (solo.c), with just concepts.h and the lessons it includes
 ```
 
 ## The lessons
