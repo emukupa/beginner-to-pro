@@ -18,7 +18,7 @@ Each step is a video, and each video points at a branch you can check out.
 | Python | [`python/`](python/) | ready | ready | ready | ready | ready |
 | Safe C | [`c/`](c/) | ready | ready | ready | ready | ready |
 | C3 | [`c3/`](c3/) | ready | ready | ready | ready | ready |
-| C++ | [`cpp/`](cpp/) | ready | planned | planned | planned | planned |
+| C++ | [`cpp/`](cpp/) | ready | ready | planned | planned | planned |
 | Rust | [`rust/`](rust/) | ready | planned | planned | planned | planned |
 | Go | [`go/`](go/) | ready | planned | planned | planned | planned |
 | TypeScript (Node) | [`node/`](node/) | ready | planned | planned | planned | planned |
