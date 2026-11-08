@@ -7,6 +7,7 @@
 #include <optional>
 #include <print>
 #include <ranges>
+#include <span>
 #include <string>
 
 #include "chart.hpp"
@@ -63,9 +64,49 @@ std::string today() {
     return std::strftime(text, sizeof text, "%Y-%m-%d", &local) ? text : "";
 }
 
+// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
+// 1 no such file or task, 2 used wrongly.
+int done_command(std::span<char*> words) {
+    std::string joined;                                // Python's " ".join(words).strip()
+    for (std::size_t i = 0; i < words.size(); i++) {
+        if (i > 0) joined += ' ';
+        joined += words[i];
+    }
+    std::string title{strip(joined)};
+    if (title.empty()) {
+        std::println(std::cerr, "Usage: done \"task title\"");
+        return 2;
+    }
+    const char* env = std::getenv("TASKS_FILE");
+    std::string path = env ? env : "tasks.txt";
+    auto loaded = load_tasks(path);
+    if (!loaded) {
+        std::println(std::cerr, "Couldn't {} {}", loaded.error() == LoadError::NotFound ? "find" : "read", path);
+        return 1;
+    }
+    Task* task = find_task(*loaded, title);           // borrowed from the list
+    if (task == nullptr) {
+        std::println(std::cerr, "No task called \"{}\"", title);
+        return 1;
+    }
+    if (task->is_done()) {
+        std::println("Already done: {}", task->title());
+        return 0;
+    }
+    if (!mark_done(path, *task)) {
+        std::println(std::cerr, "Couldn't write {}", path);
+        return 1;
+    }
+    std::println("Done: {}", task->title());
+    return 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
+    if (argc > 1 && std::string_view{argv[1]} == "done") {   // a second mode: tracker done "title"
+        return done_command(std::span{argv + 2, argv + argc});
+    }
     const char* env = std::getenv("TASKS_FILE");
     std::string path = argc > 1 ? argv[1] : env ? env : "tasks.txt";
 

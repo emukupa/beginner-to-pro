@@ -1,6 +1,7 @@
 #include "tasklist.hpp"
 
 #include "parsing.hpp"
+#include "text.hpp"
 
 namespace tracker {
 
@@ -14,6 +15,17 @@ std::size_t add_tasks(TaskList& tasks, const std::vector<std::string>& titles, c
         }
     }
     return added;
+}
+
+Task* find_task(const TaskList& tasks, std::string_view title) {
+    std::string wanted;
+    for (std::string_view word : words(title)) {
+        if (!wanted.empty()) wanted += ' ';
+        wanted += word;
+    }
+    wanted = lower(wanted);
+    auto found = std::ranges::find_if(tasks, [&](const auto& task) { return lower(task->title()) == wanted; });
+    return found == tasks.end() ? nullptr : found->get();
 }
 
 std::vector<TagCount> count_tags(const TaskList& tasks, bool include_done) {

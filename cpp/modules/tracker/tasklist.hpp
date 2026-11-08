@@ -14,6 +14,10 @@ namespace tracker {
 // Parses each title as a new "[todo]" task and adds it. Returns how many were added.
 std::size_t add_tasks(TaskList& tasks, const std::vector<std::string>& titles, const std::string& created);
 
+// The first task whose title matches, ignoring case and extra spaces: Python's
+// " ".join(title.split()).lower(). A plain pointer: borrowed, the list still owns it. nullptr if none.
+Task* find_task(const TaskList& tasks, std::string_view title);
+
 struct TagCount {
     std::string_view tag;  // borrowed from a task in the list
     std::size_t count;

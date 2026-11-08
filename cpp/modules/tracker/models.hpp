@@ -17,6 +17,7 @@ public:
 
     const std::string& title() const { return title_; }
     const std::vector<std::string>& tags() const { return tags_; }
+    Status status() const { return status_; }
     bool is_done() const { return status_ == Status::Done; }
     virtual bool urgent() const { return false; }
     virtual std::string str() const { return std::format("[{}] {}", is_done() ? 'x' : ' ', title_); }
