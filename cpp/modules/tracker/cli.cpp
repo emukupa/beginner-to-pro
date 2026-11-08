@@ -1,4 +1,5 @@
 // The program the user talks to. The only module that reads input, prints to the screen, or exits.
+#include <array>
 #include <climits>
 #include <cmath>
 #include <cstdlib>
@@ -64,9 +65,23 @@ std::string today() {
     return std::strftime(text, sizeof text, "%Y-%m-%d", &local) ? text : "";
 }
 
-// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
-// 1 no such file or task, 2 used wrongly.
-int done_command(std::span<char*> words) {
+// What each status command does: Python's CHANGES dict, as a constexpr array of structs. The
+// compiler builds the whole table before the program runs.
+struct Change {
+    std::string_view name;     // the word on the command line
+    Status sets;               // what the task's bracket becomes
+    std::string_view changed;  // printed after changing it
+    std::string_view already;  // printed when the task already had that status
+};
+
+constexpr std::array<Change, 2> CHANGES{{
+    {"done", Status::Done, "Done", "Already done"},
+    {"undo", Status::Todo, "Undone", "Not done yet"},
+}};
+
+// tracker done|undo "title": sets one task's status. Returns the exit code: 0 changed (or already
+// so), 1 no such file or task, 2 used wrongly.
+int change_command(const Change& change, std::span<char*> words) {
     std::string joined;                                // Python's " ".join(words).strip()
     for (std::size_t i = 0; i < words.size(); i++) {
         if (i > 0) joined += ' ';
@@ -74,7 +89,7 @@ int done_command(std::span<char*> words) {
     }
     std::string title{strip(joined)};
     if (title.empty()) {
-        std::println(std::cerr, "Usage: done \"task title\"");
+        std::println(std::cerr, "Usage: {} \"task title\"", change.name);
         return 2;
     }
     const char* env = std::getenv("TASKS_FILE");
@@ -89,23 +104,24 @@ int done_command(std::span<char*> words) {
         std::println(std::cerr, "No task called \"{}\"", title);
         return 1;
     }
-    if (task->is_done()) {
-        std::println("Already done: {}", task->title());
+    if (task->status() == change.sets) {
+        std::println("{}: {}", change.already, task->title());
         return 0;
     }
-    if (!mark_done(path, *task)) {
+    if (!set_status(path, *task, change.sets)) {
         std::println(std::cerr, "Couldn't write {}", path);
         return 1;
     }
-    std::println("Done: {}", task->title());
+    std::println("{}: {}", change.changed, task->title());
     return 0;
 }
 
 }  // namespace
 
 int main(int argc, char** argv) {
-    if (argc > 1 && std::string_view{argv[1]} == "done") {   // a second mode: tracker done "title"
-        return done_command(std::span{argv + 2, argv + argc});
+    if (argc > 1) {                                    // tracker done "title", tracker undo "title"
+        auto change = std::ranges::find(CHANGES, std::string_view{argv[1]}, &Change::name);
+        if (change != CHANGES.end()) return change_command(*change, std::span{argv + 2, argv + argc});
     }
     const char* env = std::getenv("TASKS_FILE");
     std::string path = argc > 1 ? argv[1] : env ? env : "tasks.txt";

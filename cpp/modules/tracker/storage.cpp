@@ -3,7 +3,9 @@
 #include <cerrno>
 #include <filesystem>
 #include <fstream>
+#include <format>
 #include <iterator>
+#include <optional>
 
 #include <stdlib.h>  // mkstemp (POSIX, not standard C++)
 #include <unistd.h>  // write, fsync, close
@@ -60,6 +62,17 @@ private:
     bool kept_ = false;
 };
 
+// How each status is written. A switch over an enum class: -Wswitch makes the build fail if a new
+// status is added without a spelling. Other has none.
+std::optional<std::string_view> word(Status status) {
+    switch (status) {
+        case Status::Todo: return "todo";
+        case Status::Done: return "done";
+        case Status::Other: return std::nullopt;
+    }
+    return std::nullopt;
+}
+
 // True if this line holds the task: the same title and status after parsing.
 bool holds(std::string_view line, const Task& task) {
     auto found = parse_line(line);
@@ -68,7 +81,9 @@ bool holds(std::string_view line, const Task& task) {
 
 }  // namespace
 
-bool mark_done(const std::string& path, const Task& task) {
+bool set_status(const std::string& path, const Task& task, Status status) {
+    auto bracket = word(status);
+    if (!bracket) return false;                       // nothing opened yet, so nothing to clean up
     std::ifstream in{path, std::ios::binary};
     if (!in) return false;
     std::string data{std::istreambuf_iterator<char>{in}, {}};  // every byte, line endings and all
@@ -86,7 +101,7 @@ bool mark_done(const std::string& path, const Task& task) {
             continue;
         }
         out += line.substr(0, open);                  // any spaces before the bracket
-        out += "[done]";
+        out += std::format("[{}]", *bracket);
         out += line.substr(close + 1);                // the title, tags and line ending
         changed = true;
     }
