@@ -13,7 +13,7 @@ Each step is a video, and each video points at a branch you can check out.
 | Language | Folder | 01 One file | 02 Modules |
 | --- | --- | --- | --- |
 | Python | [`python/`](python/) | ready | ready |
-| Safe C | `c/` | planned | planned |
+| Safe C | [`c/`](c/) | ready | ready |
 | C3 | `c3/` | planned | planned |
 | C++ | `cpp/` | planned | planned |
 | Rust | `rust/` | planned | planned |

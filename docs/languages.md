@@ -24,6 +24,35 @@ The split is the same in every language, so the videos can compare them directly
 
 Dependencies only point one way (down this table), so no language ever hits a circular import.
 
+## Use the whole language
+
+Each version is a tour of its language, not a word-for-word copy of the Python. Every signature
+feature gets a real job in the tracker, the way chapter 01 of Python used every core feature for a
+reason, and the contract still has to pass byte for byte. Structs and enums appear in every
+language.
+
+| Language | Features, and the job each one does |
+| --- | --- |
+| Safe C | `struct` + `typedef struct tag { ... } Name;` for every type; `enum`s for the task kind, the cleaned status (C23 `enum task_status : unsigned char`) and load results; a function pointer as the comparator of a stable, `qsort`-shaped sort; a variadic `[[noreturn]] fail(format, ...)`; C23 `constexpr` for the chart width, default and tag marker, `static_assert` that the fallback is valid, `[[nodiscard]]` on every result that must be checked, `typeof` in one `PUSH` macro that grows any array, `auto`; `static`, `const`, opaque types. A tagged `union` waits for chapter 03, where a command line really can hold one of two things |
+| C3 | structs and enums (with associated values), methods on types, optionals and faults instead of error codes, `@require`/`@ensure` contracts, `defer` for closing files, slices, generic modules for the growable list, macros |
+| C++ | classes with `virtual`/`override` for `UrgentTask`; `std::vector<std::unique_ptr<Task>>` for owning polymorphic tasks (`make_unique`), and why not `shared_ptr` here; `enum class Status`; plain `struct TagCount`; a function template `top_n` constrained by a concept; `std::optional` from the parser, `std::expected` from loading; `std::string_view` for parsing without copies; ranges and views to filter urgent tasks; `std::print`/`std::format`; RAII file streams; lambdas; `constexpr`; `operator<<` |
+| Rust | `struct Task`; `enum Status { Todo, Done, Other(String) }` (an enum carrying data) and `enum Kind`; `impl` blocks, `Display` and `FromStr` traits; `Option`, `Result`, `?` and a custom error enum with `From`; `Vec<Task>`, slices, `HashMap` with first-seen order kept in a `Vec`; iterators and closures; a lifetime on `TagCount<'a>` borrowing tag names; `Rc<str>` to share tag names between tasks, and why `Arc` is needed instead once threads arrive; `#![forbid(unsafe_code)]`; `#[test]` |
+| Go | structs; embedding (`UrgentTask` embeds `Task`: Go's answer to inheritance); interfaces (`fmt.Stringer`); value vs pointer receivers; `iota` constants with a `String()` method as Go's enums; slices and maps; multiple returns and error values, sentinel errors, `%w` wrapping and `errors.Is`; `defer`; generics for `TopN[T]`; closures; `sort.SliceStable`; `bufio.Scanner`; goroutines, channels, `select` and `sync.WaitGroup` once there's concurrency; table-driven tests |
+| TypeScript | classes and inheritance; interfaces and type aliases; a discriminated union for status (and a TypeScript `enum`, to show why the union is usually better); generics for `topN<T>`; `readonly`; `Map` (it keeps insertion order, which the ties need) and `Set`; generators; `async`/`await` with `readline/promises`; type guards; `satisfies`; optional chaining and `??`; ES modules; `node:test` |
+
+Features that need a reason the tracker doesn't have yet (threads, channels, `Arc`, futures) get
+one in a shared later chapter: **loading several task files at once and merging them**. Python
+gets it first as the reference (`concurrent.futures`), then each language uses its own tools:
+goroutines and channels, threads with `Arc<Mutex<_>>` or `mpsc`, `std::jthread` and futures,
+`Promise.all`, pthreads.
+
+## Chapters after 02
+
+| Chapter | What it adds | Reference |
+| --- | --- | --- |
+| 03 Done | `tracker done "title"` marks a task finished: matching messy titles, rewriting one line of the file, a second mode for the program | Python, then each language |
+| 04 Several files at once | concurrency, as above | Python, then each language |
+
 ## Order and why
 
 1. **Python**: done. The reference the contract was recorded from.
@@ -42,24 +71,32 @@ More can join on the same pattern (Zig, Java, C#, Swift) without changing anythi
 
 ## Language by language
 
-### Safe C (`c/`)
+### Safe C (`c/`) — built
 
 C written to a fixed set of rules that remove its usual footguns, enforced by the compiler and
-sanitizers instead of by hope:
+tools instead of by hope:
 
-- C23, `clang -std=c23 -Wall -Wextra -Wpedantic -Wconversion -Werror`, and
-  `-fsanitize=address,undefined` on every contract run, so a leak or overflow fails the build.
-- Banned: `gets`, `strcpy`, `strcat`, `sprintf`, `atoi`, and any unbounded read. Use `fgets`
-  with sizes, `snprintf`, `strtol` with its error checks.
-- Every allocation is checked, has one owner written in a comment, and is freed. Lengths travel
-  with their buffers.
-- **01:** `c/tracker.c`. A `struct task` with a `kind` field instead of inheritance (composition
-  over inheritance, explained on screen); a growable array of tasks.
-- **02:** a `.h`/`.c` pair per module, `#pragma once`, `static` for anything private to a file,
-  an opaque `struct tasklist` so callers can't touch its insides, and a Makefile that rebuilds only
-  what changed.
-- **Traps:** `nearbyint` for halves; UTF-8 `█` is three bytes, so pad labels by characters.
-- **Contract:** `make -C c && contract/run.sh "$PWD/c/build/tracker"`
+- C23 (`-std=c23`: `nullptr`, `bool`), `-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror`,
+  and AddressSanitizer + UBSan on every contract run (`make check`), so an overflow or undefined
+  behaviour fails the run.
+- Leaks: ASan can't check them on macOS, so `make leaks` runs the tracker under the system's
+  `leaks --atExit` tool.
+- Banned: `gets`, `strcpy`, `strcat`, `sprintf`, `atoi`, and any unbounded read. Lines are read
+  with `getline` (it grows its own buffer), strings copied with an explicit length, numbers parsed
+  by hand with an overflow cap.
+- Every allocation goes through `checked()`, has one owner written in a comment, and is freed.
+  Lengths travel with their buffers as `size_t`.
+- **01:** `c/one-file/tracker.c`, its own Makefile. `typedef struct task { ... } Task;` style types; `Task` has a `kind` field instead of inheritance; growable arrays for
+  tasks and strings; the string helpers Python has built in (`strip`, `lower`) written once.
+- **02:** `c/modules/tracker/`, beside the one-file version (both stay complete), a `.h`/`.c` pair per module with `#pragma once` and `static` for anything
+  private. Two honest differences from Python's split: a `text` module for the string helpers, and
+  the list type lives in `tasklist` as an opaque struct (callers only see functions), so `storage`
+  uses `tasklist` to add what it loads. The chart draws to whatever `FILE *` it's given. The
+  Makefile compiles each module separately and tracks header dependencies, so a change rebuilds
+  only what uses it.
+- **Traps:** `nearbyint` for halves; `qsort` isn't stable, so ties need an insertion sort; UTF-8
+  `█` is three bytes, so pad labels by characters.
+- **Contract:** `make -C c/one-file check` and `make -C c/modules check`
 
 ### C3 (`c3/`)
 
