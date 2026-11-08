@@ -28,3 +28,4 @@ make leaks           # macOS: one full run under the leaks tool
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/c3/01-one-file/start` | `course/c3/01-one-file/end` | `video/c3-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/c3/02-modules/start` | `course/c3/02-modules/end` | `video/c3-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/c3/03-done/start` | `course/c3/03-done/end` | `video/c3-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/c3/04-undo/start` | `course/c3/04-undo/end` | `video/c3-004` |
