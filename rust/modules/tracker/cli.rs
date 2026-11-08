@@ -52,8 +52,46 @@ fn parse_whole_number(text: &str) -> Option<i64> {
     Some(if negative { -value } else { value })
 }
 
+/// tracker done "title": marks one task finished. Returns the exit code.
+fn done_command(words: &[String]) -> i32 {
+    let joined = words.join(" ");
+    let title = joined.trim();
+    if title.is_empty() {
+        eprintln!("Usage: done \"task title\"");
+        return 2;
+    }
+    let path = std::env::var("TASKS_FILE").unwrap_or_else(|_| "tasks.txt".to_string());
+    let tasks = match storage::load_tasks(&path) {
+        Ok(tasks) => tasks,
+        Err(e) => {
+            eprintln!("{e}");
+            return 1;
+        }
+    };
+    let Some(task) = tasklist::find_task(&tasks, title) else {
+        eprintln!("No task called \"{title}\"");
+        return 1;
+    };
+    if task.is_done() {
+        println!("Already done: {}", task.title);
+        return 0;
+    }
+    if storage::mark_done(&path, task).is_err() {
+        eprintln!("Couldn't write {path}");
+        return 1;
+    }
+    println!("Done: {}", task.title);
+    0
+}
+
 fn main() -> io::Result<()> {
-    let path = std::env::args().nth(1).or_else(|| std::env::var("TASKS_FILE").ok()).unwrap_or_else(|| "tasks.txt".to_string());
+    let args: Vec<String> = std::env::args().collect();
+    if args.get(1).is_some_and(|a| a == "done") {
+        // a second mode: tracker done "title"
+        std::process::exit(done_command(&args[2..]));
+    }
+
+    let path = args.get(1).cloned().or_else(|| std::env::var("TASKS_FILE").ok()).unwrap_or_else(|| "tasks.txt".to_string());
 
     let mut tasks = match storage::load_tasks(&path) {
         Ok(tasks) => tasks,

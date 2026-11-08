@@ -11,6 +11,14 @@ pub fn add_tasks(tasks: &mut Vec<Task>, titles: &[String]) -> usize {
     tasks.len() - before
 }
 
+/// The first task whose title matches, ignoring case and extra spaces; None if there isn't one.
+/// The 'a says the answer borrows from `tasks`, not from `title`: two references go in, so Rust needs
+/// to be told which one the result points into.
+pub fn find_task<'a>(tasks: &'a [Task], title: &str) -> Option<&'a Task> {
+    let wanted = title.split_whitespace().collect::<Vec<_>>().join(" ").to_lowercase();
+    tasks.iter().find(|task| task.title.to_lowercase() == wanted)
+}
+
 /// A tag and how many tasks carry it. The 'a says the tag is borrowed from the tasks: a count can't
 /// outlive the list it was counted from, and the compiler checks that.
 #[derive(Debug, Clone, Copy)]
@@ -78,6 +86,13 @@ mod tests {
         let list = tasks(&["[todo] a #work #home", "[todo] b #home #work", "[todo] c #play"]);
         let top: Vec<&str> = top_tags(&list, 3, true).unwrap().iter().map(|c| c.tag).collect();
         assert_eq!(top, ["work", "home", "play"]);
+    }
+
+    #[test]
+    fn finds_a_messy_title() {
+        let list = tasks(&["[todo] Review pull request #work"]);
+        assert_eq!(find_task(&list, "  review PULL   request ").map(|t| t.title.as_str()), Some("Review pull request"));
+        assert!(find_task(&list, "Walk dog").is_none());
     }
 
     #[test]
