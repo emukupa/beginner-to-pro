@@ -2,18 +2,33 @@
 import os
 import sys
 from datetime import date
+from typing import NamedTuple
 
 from .chart import draw_chart
 from .models import UrgentTask
-from .storage import append_titles, load_tasks, mark_done
+from .storage import append_titles, load_tasks, set_status
 from .tasklist import add_tasks, find_task, summary, top_tags
 
 
-def done_command(words):
-    """tasks.py done "title": marks one task finished. Returns the exit code."""
+class Change(NamedTuple):
+    """What a status command does: the status it sets, and what it prints."""
+    status: str    # the line's bracket becomes [status]
+    changed: str   # printed after changing it
+    already: str   # printed when the task already had that status
+
+
+CHANGES = {
+    "done": Change("done", "Done", "Already done"),
+    "undo": Change("todo", "Undone", "Not done yet"),
+}
+
+
+def change_command(name, words):
+    """tasks.py done|undo "title": sets one task's status. Returns the exit code."""
+    change = CHANGES[name]
     title = " ".join(words).strip()
     if not title:
-        print('Usage: done "task title"', file=sys.stderr)
+        print(f'Usage: {name} "task title"', file=sys.stderr)
         return 2
     path = os.getenv("TASKS_FILE", "tasks.txt")
     try:
@@ -25,17 +40,21 @@ def done_command(words):
     if task is None:
         print(f'No task called "{title}"', file=sys.stderr)
         return 1
-    if task.is_done():
-        print(f"Already done: {task.title}")
+    if task.status == change.status:
+        print(f"{change.already}: {task.title}")
         return 0
-    mark_done(path, task)
-    print(f"Done: {task.title}")
+    try:
+        set_status(path, task, change.status)
+    except OSError:
+        print(f"Couldn't write {path}", file=sys.stderr)
+        return 1
+    print(f"{change.changed}: {task.title}")
     return 0
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "done":   # a second mode: tasks.py done "title"
-        sys.exit(done_command(sys.argv[2:]))
+    if len(sys.argv) > 1 and sys.argv[1] in CHANGES:   # tasks.py done "title", tasks.py undo "title"
+        sys.exit(change_command(sys.argv[1], sys.argv[2:]))
 
     if len(sys.argv) > 1:
         path = sys.argv[1]
