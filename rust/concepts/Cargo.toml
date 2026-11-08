@@ -1,0 +1,34 @@
+# Rust concepts, one lesson per module, run by src/main.rs.
+#   cargo run                          every lesson
+#   cargo run -- 7                     lesson 7 alone
+#   cargo run --features bug07 -- 7    lesson 7 with its bug compiled in: watch the compiler catch it
+#   cargo test                         the lessons' #[test]s
+[package]
+name = "concepts"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# One switch per lesson, like C's BUG=7. Each turns on a deliberate mistake in that lesson only.
+# Most never build: the compiler refuses them. Two (03, 12) build and then panic when they run.
+[features]
+bug01 = []
+bug02 = []
+bug03 = []
+bug04 = []
+bug05 = []
+bug06 = []
+bug07 = []
+bug08 = []
+bug09 = []
+bug10 = []
+bug11 = []
+bug12 = []
+bug13 = []
+bug14 = []
+bug15 = []
+
+# Ignoring a #[must_use] result is only a warning by default. Here it's an error, the way C's
+# -Werror turns [[nodiscard]] into one: a result you forgot about is a bug.
+[lints.rust]
+unused_must_use = "deny"
