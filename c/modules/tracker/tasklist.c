@@ -44,6 +44,25 @@ size_t add_tasks(TaskList *list, const StringList *titles, const char *created) 
     return added;
 }
 
+const Task *find_task(const TaskList *list, const char *title) {
+    // Python's " ".join(title.split()).lower(): single spaces between words, lowercase.
+    char *wanted = checked(calloc(strlen(title) + 1, 1));  // owned, freed below
+    size_t n = 0;
+    for (const char *s = title; *s; s++) {
+        if (is_space(*s)) continue;
+        if (n > 0 && is_space(s[-1])) wanted[n++] = ' ';
+        wanted[n++] = *s;
+    }
+    lower(wanted);
+    const Task *found = nullptr;
+    for (size_t i = 0; i < list->len && found == nullptr; i++) {
+        const Task *t = &list->items[i];
+        if (same_word(t->title, strlen(t->title), wanted)) found = t;  // same text, any case
+    }
+    free(wanted);
+    return found;
+}
+
 TagList count_tags(const TaskList *list, bool include_done) {
     TagList counts = {};
     for (size_t i = 0; i < list->len; i++) {

@@ -1,6 +1,7 @@
 // The program the user talks to. The only module that reads input, prints to the screen, or exits.
 #define _POSIX_C_SOURCE 200809L  // getline(), localtime_r()
 
+#include <stddef.h>  // unreachable()
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,10 +36,76 @@ static_assert(CHART_WIDTH > 0, "a chart needs room for its bars");
     return line;
 }
 
-int main(int argc, char **argv) {
-    const char *path = argc > 1 ? argv[1] : getenv("TASKS_FILE");
-    if (path == nullptr) path = "tasks.txt";
+// What the command line asked for: one of two things, never both. A tagged union: kind says which
+// member of the union holds the data, and only that member may be read.
+typedef struct command {
+    enum command_kind { COMMAND_TRACK, COMMAND_DONE } kind;
+    union {
+        struct {
+            const char *path;  // argv[1], else $TASKS_FILE, else tasks.txt
+        } track;
+        struct {
+            const char *path;  // $TASKS_FILE, else tasks.txt
+            char *title;       // owned: the words after "done", joined and stripped; may be empty
+        } done;
+    };
+} Command;
 
+static Command read_command(int argc, char **argv) {
+    const char *path = getenv("TASKS_FILE");
+    if (path == nullptr) path = "tasks.txt";
+    if (argc < 2 || strcmp(argv[1], "done") != 0) {
+        return (Command){.kind = COMMAND_TRACK, .track.path = argc > 1 ? argv[1] : path};
+    }
+    // Python's " ".join(words).strip(): every word after "done", one space between each.
+    size_t size = 1;
+    for (int i = 2; i < argc; i++) size += strlen(argv[i]) + 1;
+    char *joined = checked(malloc(size));  // owned, freed below
+    size_t len = 0;
+    for (int i = 2; i < argc; i++) {
+        if (i > 2) joined[len++] = ' ';
+        size_t n = strlen(argv[i]);
+        memcpy(joined + len, argv[i], n);
+        len += n;
+    }
+    const char *s = joined;
+    strip(&s, &len, nullptr);
+    Command command = {.kind = COMMAND_DONE, .done = {.path = path, .title = copy_text(s, len)}};
+    free(joined);
+    return command;
+}
+
+// tracker done "title": marks one task finished. Returns the exit code: 0 done (or already done),
+// 1 no such file or task, 2 used wrongly.
+static int done_command(const char *path, const char *title) {
+    if (title[0] == '\0') {
+        fputs("Usage: done \"task title\"\n", stderr);
+        return 2;
+    }
+    TaskList *tasks = tasklist_new();
+    LoadResult loaded = load_tasks(path, tasks);
+    const Task *task = loaded == LOAD_OK ? find_task(tasks, title) : nullptr;  // borrowed from tasks
+    int code = 0;
+    if (loaded != LOAD_OK) {
+        fprintf(stderr, "Couldn't %s %s\n", loaded == LOAD_NOT_FOUND ? "find" : "read", path);
+        code = 1;
+    } else if (task == nullptr) {
+        fprintf(stderr, "No task called \"%s\"\n", title);
+        code = 1;
+    } else if (task_is_done(task)) {
+        printf("Already done: %s\n", task->title);
+    } else if (mark_done(path, task)) {
+        printf("Done: %s\n", task->title);
+    } else {
+        fprintf(stderr, "Couldn't write %s\n", path);
+        code = 1;
+    }
+    tasklist_free(tasks);
+    return code;
+}
+
+// The program from chapter 01: ask for new tasks, then show the summary and the chart.
+static int track_command(const char *path) {
     TaskList *tasks = tasklist_new();
     switch (load_tasks(path, tasks)) {
         case LOAD_OK: break;
@@ -93,4 +160,17 @@ int main(int argc, char **argv) {
     strlist_free(&new_titles);
     tasklist_free(tasks);
     return 0;
+}
+
+int main(int argc, char **argv) {
+    Command command = read_command(argc, argv);
+    switch (command.kind) {
+        case COMMAND_TRACK: return track_command(command.track.path);
+        case COMMAND_DONE: {
+            int code = done_command(command.done.path, command.done.title);
+            free(command.done.title);
+            return code;
+        }
+    }
+    unreachable();  // C23: every kind returned above; -Wswitch flags a kind added without a case
 }

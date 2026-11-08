@@ -14,6 +14,10 @@ void tasklist_push(TaskList *list, Task owned);      // the list takes ownership
 // Parses each title as a new "[todo]" task and adds it. Returns how many were added.
 size_t add_tasks(TaskList *list, const StringList *titles, const char *created);
 
+// The first task whose title matches, ignoring case and extra spaces. Borrowed: the list still owns
+// it. nullptr if there isn't one.
+const Task *find_task(const TaskList *list, const char *title);
+
 typedef struct tag_count {
     const char *tag;  // borrowed from a task in the list
     size_t count;

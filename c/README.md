@@ -18,7 +18,7 @@ cd c/one-file        # or c/modules
 make                 # build/tracker, with the sanitizers on
 make run             # build if needed, then run it on tasks.txt here
 make check           # the contract: must match Python byte for byte
-make leaks           # macOS: one full run under the leaks tool
+make leaks           # macOS: runs under the leaks tool, which must find nothing
 ```
 
 | Chapter | Start | End | Video |
