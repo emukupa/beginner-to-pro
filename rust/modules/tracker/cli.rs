@@ -10,8 +10,9 @@ mod storage;
 mod tasklist;
 
 use std::io::{self, BufRead, Write};
+use std::str::FromStr;
 
-use models::Kind;
+use models::{Kind, Status};
 use parsing::TAG_MARKER;
 use tasklist::NeedAtLeastOne;
 
@@ -52,12 +53,60 @@ fn parse_whole_number(text: &str) -> Option<i64> {
     Some(if negative { -value } else { value })
 }
 
-/// tracker done "title": marks one task finished. Returns the exit code.
-fn done_command(words: &[String]) -> i32 {
+/// What a status command does. The command words are the enum's cases, and each question about a
+/// case is a match, so every case must answer every question: Python's CHANGES dict, checked.
+#[derive(Debug, Clone, Copy)]
+enum Change {
+    Done,
+    Undo,
+}
+
+impl Change {
+    /// The word typed for it: "done" or "undo".
+    fn name(self) -> &'static str {
+        match self {
+            Change::Done => "done",
+            Change::Undo => "undo",
+        }
+    }
+    /// The status the line's bracket becomes.
+    fn sets(self) -> Status {
+        match self {
+            Change::Done => Status::Done,
+            Change::Undo => Status::Todo,
+        }
+    }
+    /// Printed after changing it.
+    fn changed(self) -> &'static str {
+        match self {
+            Change::Done => "Done",
+            Change::Undo => "Undone",
+        }
+    }
+    /// Printed when the task already had that status.
+    fn already(self) -> &'static str {
+        match self {
+            Change::Done => "Already done",
+            Change::Undo => "Not done yet",
+        }
+    }
+}
+
+/// "undo".parse::<Change>(): the typed word, or Err for anything that isn't a command.
+impl FromStr for Change {
+    type Err = ();
+
+    fn from_str(word: &str) -> Result<Change, ()> {
+        [Change::Done, Change::Undo].into_iter().find(|c| c.name() == word).ok_or(())
+    }
+}
+
+/// tracker done|undo "title": sets one task's status. Returns the exit code.
+fn change_command(change: Change, words: &[String]) -> i32 {
     let joined = words.join(" ");
     let title = joined.trim();
     if title.is_empty() {
-        eprintln!("Usage: done \"task title\"");
+        eprintln!("Usage: {} \"task title\"", change.name());
         return 2;
     }
     let path = std::env::var("TASKS_FILE").unwrap_or_else(|_| "tasks.txt".to_string());
@@ -72,23 +121,23 @@ fn done_command(words: &[String]) -> i32 {
         eprintln!("No task called \"{title}\"");
         return 1;
     };
-    if task.is_done() {
-        println!("Already done: {}", task.title);
+    if task.status == change.sets() {
+        println!("{}: {}", change.already(), task.title);
         return 0;
     }
-    if storage::mark_done(&path, task).is_err() {
+    if storage::set_status(&path, task, &change.sets()).is_err() {
         eprintln!("Couldn't write {path}");
         return 1;
     }
-    println!("Done: {}", task.title);
+    println!("{}: {}", change.changed(), task.title);
     0
 }
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
-    if args.get(1).is_some_and(|a| a == "done") {
-        // a second mode: tracker done "title"
-        std::process::exit(done_command(&args[2..]));
+    if let Some(change) = args.get(1).and_then(|a| a.parse::<Change>().ok()) {
+        // a second mode: tracker done "title", tracker undo "title"
+        std::process::exit(change_command(change, &args[2..]));
     }
 
     let path = args.get(1).cloned().or_else(|| std::env::var("TASKS_FILE").ok()).unwrap_or_else(|| "tasks.txt".to_string());

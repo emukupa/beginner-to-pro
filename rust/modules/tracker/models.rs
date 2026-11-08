@@ -10,6 +10,18 @@ pub enum Status {
     Other(String),
 }
 
+impl Status {
+    /// How it's spelled between the brackets. A match on an enum must handle every case: add a
+    /// status and this stops compiling until it's spelled. Other carries its own word.
+    pub fn word(&self) -> &str {
+        match self {
+            Status::Todo => "todo",
+            Status::Done => "done",
+            Status::Other(word) => word,
+        }
+    }
+}
+
 /// Rust has no inheritance; Python's UrgentTask(Task) is a kind field.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Kind {

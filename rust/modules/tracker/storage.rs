@@ -6,7 +6,7 @@ use std::fs::{self, File, OpenOptions};
 use std::hash::{BuildHasher, Hasher};
 use std::io::{self, Write};
 
-use crate::models::Task;
+use crate::models::{Status, Task};
 
 /// Everything that can go wrong reading the tasks file, each case carrying what the message needs.
 #[derive(Debug)]
@@ -95,8 +95,8 @@ fn bracket(line: &str) -> Option<(usize, usize)> {
     Some((open, close))
 }
 
-/// Rewrites the line holding this task as [done], leaving every other byte of the file alone.
-pub fn mark_done(path: &str, task: &Task) -> io::Result<()> {
+/// Rewrites the line holding this task as [status], leaving every other byte of the file alone.
+pub fn set_status(path: &str, task: &Task, status: &Status) -> io::Result<()> {
     let text = fs::read_to_string(path)?;
     let mut out = String::with_capacity(text.len());
     let mut changed = false;
@@ -105,7 +105,7 @@ pub fn mark_done(path: &str, task: &Task) -> io::Result<()> {
         match bracket(line) {
             Some((open, close)) if !changed && holds(line, task) => {
                 out.push_str(&line[..open]); // any spaces before the bracket
-                out.push_str("[done]");
+                out.push_str(&format!("[{}]", status.word()));
                 out.push_str(&line[close + 1..]); // the title, tags and line ending
                 changed = true;
             }
