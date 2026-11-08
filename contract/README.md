@@ -20,6 +20,10 @@ the case brings), with:
 | `expected_exit` | the exit code |
 | `expected_tasks.txt` | the tasks file afterwards (new tasks are appended) |
 
+`done/` holds the done-command cases (chapter 03 onwards):
+`CASES=done contract/run.sh <command...>`. Arguments are one per line in `args`, so a title with
+spaces is one argument.
+
 The expected files were recorded from the Python chapter 01 version with
 `RECORD=1 contract/run.sh python3 "$PWD/python/tasks.py"`. Only re-record when the behaviour is
 meant to change, and then for every language.
