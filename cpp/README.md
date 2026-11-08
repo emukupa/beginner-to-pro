@@ -30,6 +30,7 @@ make leaks           # macOS: one full run under the leaks tool
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/cpp/00-concepts/start` | `course/cpp/00-concepts/end` | `video/cpp-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/cpp/01-one-file/start` | `course/cpp/01-one-file/end` | `video/cpp-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/cpp/02-modules/start` | `course/cpp/02-modules/end` | `video/cpp-002` |
+| [03 Done](chapters/03-done/CHAPTER.md) | `course/cpp/03-done/start` | `course/cpp/03-done/end` | `video/cpp-003` |
 
 VS Code: install the recommended **clangd** extension. It reads `compile_flags.txt` and understands
 C++23, using the same clang that builds the code.
