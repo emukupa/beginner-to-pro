@@ -33,6 +33,11 @@ public final class Tests {
         new Check("a line without a bracket is not a task", () -> {
             assert Parsing.parseLine("Buy milk #home").isEmpty();
         }),
+        new Check("finds a messy title", () -> {
+            var tasks = load("[todo] Review pull request #work");
+            assert TaskList.findTask(tasks, "  review PULL   request ").orElseThrow().title.equals("Review pull request");
+            assert TaskList.findTask(tasks, "Walk dog").isEmpty();
+        }),
         new Check("ties keep first-seen order", () -> {
             var top = TaskList.topTags(new java.util.ArrayList<>(load("[todo] a #work #home", "[todo] b #home #work", "[todo] c #play")), 3, true);
             assert top.stream().map(TagCount::tag).toList().equals(List.of("work", "home", "play"));

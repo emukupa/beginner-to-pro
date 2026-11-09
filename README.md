@@ -24,7 +24,7 @@ Each step is a video, and each video points at a branch you can check out.
 | Go | [`go/`](go/) | ready | ready | ready | ready | ready |
 | TypeScript (Node) | [`node/`](node/) | ready | ready | ready | ready | ready |
 | C# | [`csharp/`](csharp/) | ready | ready | ready | ready | ready |
-| Java | [`java/`](java/) | ready | ready | ready | planned | planned |
+| Java | [`java/`](java/) | ready | ready | ready | ready | planned |
 | Kotlin | [`kotlin/`](kotlin/) | ready | planned | planned | planned | planned |
 | Swift | [`swift/`](swift/) | ready | planned | planned | planned | planned |
 

@@ -49,7 +49,49 @@ public final class Main {
         return Optional.of(match.group(1).equals("-") ? -value : value);
     }
 
+    // tracker done "title": marks one task finished. Returns the exit code.
+    static int done(List<String> words) throws IOException {
+        String title = Text.strip(String.join(" ", words));
+        if (title.isEmpty()) {
+            err.println("Usage: done \"task title\"");
+            return 2;
+        }
+        String env = System.getenv("TASKS_FILE");
+        Path path = Path.of(env != null ? env : "tasks.txt");
+        List<Task> tasks;
+        try {
+            tasks = Storage.loadTasks(path);
+        } catch (NoSuchFileException e) {
+            err.println("Couldn't find " + path);
+            return 1;
+        } catch (IOException e) {
+            err.println("Couldn't read " + path);
+            return 1;
+        }
+        Optional<Task> found = TaskList.findTask(tasks, title);
+        if (found.isEmpty()) {
+            err.println("No task called \"" + title + "\"");
+            return 1;
+        }
+        Task task = found.get();
+        if (task.isDone()) {
+            out.println("Already done: " + task.title);
+            return 0;
+        }
+        try {
+            Storage.markDone(path, task);
+        } catch (IOException e) {
+            err.println("Couldn't write " + path);
+            return 1;
+        }
+        out.println("Done: " + task.title);
+        return 0;
+    }
+
     public static void main(String[] args) throws IOException {
+        if (args.length > 0 && args[0].equals("done")) { // a second mode: tracker done "title"
+            System.exit(done(List.of(args).subList(1, args.length)));
+        }
         String env = System.getenv("TASKS_FILE");
         Path path = Path.of(args.length > 0 ? args[0] : env != null ? env : "tasks.txt");
 

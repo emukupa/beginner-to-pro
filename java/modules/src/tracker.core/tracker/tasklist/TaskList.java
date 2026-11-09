@@ -4,9 +4,11 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import tracker.models.TagCount;
 import tracker.models.Task;
 import tracker.parsing.Parsing;
+import tracker.text.Text;
 
 // Working with the list: adding, counting, ranking, summing up. No files, no printing.
 public final class TaskList {
@@ -19,6 +21,12 @@ public final class TaskList {
         int before = tasks.size();
         titles.forEach(title -> Parsing.parseLine("[todo] " + title).ifPresent(tasks::add));
         return tasks.size() - before;
+    }
+
+    // The first task whose title matches, ignoring case and extra spaces; empty if there isn't one.
+    public static Optional<Task> findTask(List<Task> tasks, String title) {
+        String wanted = String.join(" ", Text.words(title)).toLowerCase(java.util.Locale.ROOT);
+        return tasks.stream().filter(t -> t.title.toLowerCase(java.util.Locale.ROOT).equals(wanted)).findFirst();
     }
 
     // A LinkedHashMap keeps the order keys were first put in, so first-seen order comes free.
