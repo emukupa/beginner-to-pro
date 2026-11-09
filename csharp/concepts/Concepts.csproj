@@ -1,0 +1,45 @@
+<!--
+  C# concepts, one lesson per file, run by Program.cs. `dotnet run` runs every lesson; the commands
+  for one lesson and for a lesson's bug are at the top of Program.cs (an XML comment can't hold the
+  two dashes they need).
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>concepts</AssemblyName>
+    <RootNamespace>Concepts</RootNamespace>
+
+    <!-- string means "never null", string? means "might be null", and the compiler checks it. -->
+    <Nullable>enable</Nullable>
+    <!-- Every warning is an error, the way C's -Werror is: a warning you ignore is a bug waiting. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- CS8524 says a switch over an enum misses "unnamed" values such as (Status)42. Our enums are
+         only ever made by our own code, so that one is off; CS8509 (a named member missed) stays on. -->
+    <NoWarn>$(NoWarn);CS8524</NoWarn>
+
+    <!-- Numbers and text print the same on every machine, whatever its language settings. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <!-- Common namespaces (System, System.IO, System.Linq, System.Collections.Generic) without
+         writing `using` in every file. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- The bug switch, like C's BUG=7: -p:Bug=7 defines BUG07, and each lesson's mistake sits under
+         #if BUGNN. Most never build; two (03, 12) build and then throw when they run. -->
+    <DefineConstants Condition="'$(Bug)' != ''">$(DefineConstants);BUG$(Bug.PadLeft(2, '0'))</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- System.Threading.Tasks has a Task too (for async code). Leaving it out of the implicit
+         usings means Task always means our task. -->
+    <Using Remove="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copy tasks.txt next to the program, so lessons 11-14 find it from any folder. -->
+    <None Include="tasks.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,27 @@
+<!-- Tests for the pieces the lessons build, with MSTest. Run from this folder: dotnet test -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The one package in the course: MSTest, the test framework that ships with .NET's templates. -->
+    <PackageReference Include="MSTest" Version="4.0.2" />
+    <!-- The lessons themselves; their tasks.txt is copied next to the tests too. -->
+    <ProjectReference Include="../concepts/Concepts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    <Using Include="Concepts" />
+    <!-- Task means the tracker's task, not System.Threading.Tasks.Task. -->
+    <Using Remove="System.Threading.Tasks" />
+  </ItemGroup>
+
+</Project>
