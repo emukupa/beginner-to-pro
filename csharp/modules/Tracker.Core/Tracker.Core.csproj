@@ -1,0 +1,13 @@
+<!-- The tracker's code, as a class library (namespace Tracker): every job but talking to the user. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- internal means "this assembly only", except for the tests, which may see it too. -->
+    <InternalsVisibleTo Include="Tracker.Tests" />
+  </ItemGroup>
+</Project>
