@@ -34,6 +34,7 @@ go build -o modules/build/tracker ./modules     # the same for modules/
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/go/00-concepts/start` | `course/go/00-concepts/end` | `video/go-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/go/01-one-file/start` | `course/go/01-one-file/end` | `video/go-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/go/02-modules/start` | `course/go/02-modules/end` | `video/go-002` |
+| [03 Done](chapters/03-done/CHAPTER.md) | `course/go/03-done/start` | `course/go/03-done/end` | `video/go-003` |
 
 VS Code: install the official **Go** extension. It runs `gopls`, formats on save with gofmt, and
 shows vet's findings as you type.
