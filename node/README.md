@@ -9,6 +9,7 @@ there's no build step, and `tsc` checks the types separately with strict setting
 | --- | --- | --- |
 | [`concepts/`](concepts/) | one ES module per concept, run by `main.ts`: `npm run concepts` runs them all, `node concepts/main.ts 7` one, `npm run bug -- 7` type-checks its mistake | 00 |
 | [`one-file/`](one-file/) | the whole tracker in `tracker.ts` | 01 |
+| [`modules/`](modules/) | the same program split into ES modules in `tracker/`, one per job, with tests | 02 |
 
 ```bash
 cd node
@@ -21,12 +22,14 @@ npm test             # node --test
 ```bash
 cd node
 ../contract/run.sh node "$PWD/one-file/tracker.ts"   # the contract: must match Python byte for byte
+../contract/run.sh node "$PWD/modules/tracker/cli.ts"
 ```
 
 | Chapter | Start | End | Video |
 | --- | --- | --- | --- |
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/node/00-concepts/start` | `course/node/00-concepts/end` | `video/node-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/node/01-one-file/start` | `course/node/01-one-file/end` | `video/node-001` |
+| [02 Modules](chapters/02-modules/CHAPTER.md) | `course/node/02-modules/start` | `course/node/02-modules/end` | `video/node-002` |
 
 VS Code understands TypeScript out of the box; it reads `tsconfig.json`, so the editor shows the
 same errors as `npm run check`.
