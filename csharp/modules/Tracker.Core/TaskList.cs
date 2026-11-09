@@ -15,6 +15,13 @@ public static class TaskList
         return tasks.Count - before;
     }
 
+    // The first task whose title matches, ignoring case and extra spaces; null if there isn't one.
+    public static Models.Task? FindTask(IEnumerable<Models.Task> tasks, string title)
+    {
+        string wanted = string.Join(' ', Text.Words(title)).ToLowerInvariant();
+        return tasks.FirstOrDefault(t => t.Title.ToLowerInvariant() == wanted);
+    }
+
     // Every tag with how many tasks carry it, in the order each tag first appears. A Dictionary
     // doesn't promise any order, so the List keeps it and the Dictionary finds each tag's place.
     public static List<TagCount> CountTags(IEnumerable<Models.Task> tasks, bool includeDone = true)

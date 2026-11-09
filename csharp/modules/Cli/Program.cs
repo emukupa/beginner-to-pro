@@ -10,6 +10,8 @@ using Tracker.Models;
 
 Console.OutputEncoding = new UTF8Encoding(false);
 
+if (args is ["done", .. var words]) return Commands.Done(words); // a second mode: tracker done "title"
+
 string path = args.Length > 0 ? args[0] : Environment.GetEnvironmentVariable("TASKS_FILE") ?? "tasks.txt";
 
 List<Tracker.Models.Task> tasks;
@@ -64,6 +66,57 @@ foreach (var task in tasks.OfType<UrgentTask>().Where(t => !t.IsDone))
 Console.WriteLine("\nTop tags");
 Chart.Draw(Console.Out, pairs);
 return 0;
+
+// tracker done "title": marks one task finished. Returns the exit code.
+static class Commands
+{
+    public static int Done(string[] words)
+    {
+        string title = Text.Strip(string.Join(' ', words));
+        if (title == "")
+        {
+            Console.Error.WriteLine("Usage: done \"task title\"");
+            return 2;
+        }
+        string path = Environment.GetEnvironmentVariable("TASKS_FILE") ?? "tasks.txt";
+        List<Tracker.Models.Task> tasks;
+        try
+        {
+            tasks = Storage.LoadTasks(path);
+        }
+        catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
+        {
+            Console.Error.WriteLine($"Couldn't find {path}");
+            return 1;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Console.Error.WriteLine($"Couldn't read {path}");
+            return 1;
+        }
+        if (TaskList.FindTask(tasks, title) is not { } task)
+        {
+            Console.Error.WriteLine($"No task called \"{title}\"");
+            return 1;
+        }
+        if (task.IsDone)
+        {
+            Console.WriteLine($"Already done: {task.Title}");
+            return 0;
+        }
+        try
+        {
+            Storage.MarkDone(path, task);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            Console.Error.WriteLine($"Couldn't write {path}");
+            return 1;
+        }
+        Console.WriteLine($"Done: {task.Title}");
+        return 0;
+    }
+}
 
 // Reading what the user types: only this program does that, so it lives here, not in the library.
 static class Input

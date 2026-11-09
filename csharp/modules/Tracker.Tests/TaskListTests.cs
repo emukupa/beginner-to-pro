@@ -31,4 +31,12 @@ public class TaskListTests
         Chart.Draw(output, [new("home", 2), new("work", 1)], 4);
         Assert.AreEqual("home  ████ 2\nwork  ██ 1\n", output.ToString());
     }
+
+    [TestMethod]
+    public void FindsAMessyTitle()
+    {
+        var tasks = Load("[todo] Review pull request #work");
+        Assert.AreEqual("Review pull request", TaskList.FindTask(tasks, "  review PULL   request ")?.Title);
+        Assert.IsNull(TaskList.FindTask(tasks, "Walk dog"));
+    }
 }
