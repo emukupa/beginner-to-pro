@@ -22,7 +22,7 @@ Each step is a video, and each video points at a branch you can check out.
 | C++ | [`cpp/`](cpp/) | ready | ready | ready | ready | ready |
 | Rust | [`rust/`](rust/) | ready | ready | ready | ready | ready |
 | Go | [`go/`](go/) | ready | ready | ready | ready | ready |
-| TypeScript (Node) | [`node/`](node/) | ready | planned | planned | planned | planned |
+| TypeScript (Node) | [`node/`](node/) | ready | ready | planned | planned | planned |
 
 The plan for every language is in [docs/languages.md](docs/languages.md).
 
