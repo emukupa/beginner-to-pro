@@ -36,6 +36,7 @@ cd ../modules && ./gradlew installDist test   # chapter 02: Gradle (downloads it
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/kotlin/01-one-file/start` | `course/kotlin/01-one-file/end` | `video/kotlin-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/kotlin/02-modules/start` | `course/kotlin/02-modules/end` | `video/kotlin-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/kotlin/03-done/start` | `course/kotlin/03-done/end` | `video/kotlin-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/kotlin/04-undo/start` | `course/kotlin/04-undo/end` | `video/kotlin-004` |
 
 IntelliJ IDEA (Community is free) knows Kotlin out of the box: open `kotlin/concepts/` and it
 shows kotlinc's errors as you type, plus hints kotlinc doesn't give, such as unused variables.
