@@ -1,6 +1,6 @@
 # Chapter 02 — Modules: headers, source files and make (Safe C)
 
-**Video:** Safe C: Modules (tag `video/c-002`)
+**Video:** [C Has No import: Header Files, the Linker and Make](https://youtu.be/bb3CNcl9JFE) on YouTube
 
 **Goal:** build `c/modules/`: the code of `c/one-file/tracker.c` split into `c/modules/tracker/`, one `.h`/`.c` pair per job, the same split as
 Python's chapter 02, without changing a byte of what the program does. The contract proves it.

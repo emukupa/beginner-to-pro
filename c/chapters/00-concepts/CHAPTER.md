@@ -1,6 +1,6 @@
 # Chapter 00 — Safe C concepts
 
-**Video:** Safe C: Concepts (tag `video/c-000`)
+**Video:** [Safe C for Beginners: C With Seatbelts](https://youtu.be/6MnMMOOcCuI) on YouTube
 
 **Goal:** learn C, and the Safe C rules, before building anything with it. `c/concepts/` holds one
 lesson per file. `main.c` pulls them all in with `#include` (which pastes each file in, so the

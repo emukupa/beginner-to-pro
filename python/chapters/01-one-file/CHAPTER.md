@@ -1,6 +1,6 @@
 # Chapter 01 — The whole tracker in one file (Python)
 
-**Video:** Python: Beginner to Pro (tag `video/python-001`)
+**Video:** [Build a Task Tracker in 132 Lines of Python](https://youtu.be/0PIOCYxFeB8) on YouTube
 
 **Goal:** write `python/tasks.py`, a task tracker that reads the messy `tasks.txt`, lets you add
 tasks, flags urgent ones, and charts your top tags, using every core feature of Python for a

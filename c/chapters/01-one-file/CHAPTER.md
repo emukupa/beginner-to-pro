@@ -1,6 +1,6 @@
 # Chapter 01 — The whole tracker in one file (Safe C)
 
-**Video:** Safe C: Beginner to Pro (tag `video/c-001`)
+**Video:** [Rewriting a Python App in C: 132 Lines Become 447](https://youtu.be/FRU5NErgoOo) on YouTube
 
 **Goal:** write `c/one-file/tracker.c`, the same task tracker as `python/tasks.py`, in C23. The reference is
 the Python version: the contract checks that every byte of output, every exit code and the tasks

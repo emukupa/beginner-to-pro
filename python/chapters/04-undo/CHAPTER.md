@@ -1,6 +1,6 @@
 # Chapter 04 — The undo command (Python)
 
-**Video:** Python: Undo (tag `video/python-004`)
+**Video:** [Add Undo to a Python CLI: One Function, Two Commands](https://youtu.be/BcdiuR8OZ60) on YouTube
 
 **Goal:** the challenge from chapter 03. `python3 tasks.py undo "title"` sets a finished task back to
 `[todo]`, in the file itself. Done and undo become one command driven by a small table, and the

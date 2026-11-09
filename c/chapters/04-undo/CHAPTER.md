@@ -1,6 +1,6 @@
 # Chapter 04 — The undo command (Safe C)
 
-**Video:** Safe C: Undo (tag `video/c-004`)
+**Video:** [Undo in C: One Table, Two Commands](https://youtu.be/YUZKIc-HbnY) on YouTube
 
 **Goal:** the challenge from chapter 03, in `c/modules/`. `./build/tracker undo "title"` sets a
 finished task back to `[todo]`. Python's chapter 04 is the reference: the same six `contract/undo/`

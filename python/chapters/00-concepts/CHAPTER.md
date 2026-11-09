@@ -1,6 +1,6 @@
 # Chapter 00 — Python concepts
 
-**Video:** Python: Concepts (tag `video/python-000`)
+**Video:** [Python Basics Before Your First Project](https://youtu.be/hAObFHfsNd4) on YouTube
 
 **Goal:** learn the language before building anything with it. `python/concepts/` holds one small
 lesson per file. `main.py` imports them all and runs the ones you ask for:

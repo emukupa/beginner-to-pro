@@ -13,10 +13,13 @@ language takes the same path:
 
 Each step is a video, and each video points at a branch you can check out.
 
+**Watch the series on YouTube: [Polyglot Code](https://www.youtube.com/@thepolyglotcode).** A new language
+every Monday; until its videos are out, a language's chapters say *ready*.
+
 | Language | Folder | 00 Concepts | 01 One file | 02 Modules | 03 Done | 04 Undo |
 | --- | --- | --- | --- | --- | --- | --- |
-| Python | [`python/`](python/) | ready | ready | ready | ready | ready |
-| Safe C | [`c/`](c/) | ready | ready | ready | ready | ready |
+| Python | [`python/`](python/) | [▶ watch](https://youtu.be/hAObFHfsNd4) | [▶ watch](https://youtu.be/0PIOCYxFeB8) | [▶ watch](https://youtu.be/rGYMq4JUC9Y) | [▶ watch](https://youtu.be/jhPUsdKYUWc) | [▶ watch](https://youtu.be/BcdiuR8OZ60) |
+| Safe C | [`c/`](c/) | [▶ watch](https://youtu.be/6MnMMOOcCuI) | [▶ watch](https://youtu.be/FRU5NErgoOo) | [▶ watch](https://youtu.be/bb3CNcl9JFE) | [▶ watch](https://youtu.be/tdUVaWJdoqQ) | [▶ watch](https://youtu.be/YUZKIc-HbnY) |
 | C3 | [`c3/`](c3/) | ready | ready | ready | ready | ready |
 | Zig | [`zig/`](zig/) | ready | ready | ready | ready | ready |
 | C++ | [`cpp/`](cpp/) | ready | ready | ready | ready | ready |

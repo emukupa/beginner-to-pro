@@ -1,6 +1,6 @@
 # Chapter 02 — Modules and imports (Python)
 
-**Video:** Python: Modules and Imports (tag `video/python-002`)
+**Video:** [Python Modules and Imports: One File Into a Package](https://youtu.be/rGYMq4JUC9Y) on YouTube
 
 **Goal:** break the 132-line `tasks.py` into a `tracker` package, one file per job, without
 changing a single byte of what the program does. The contract proves it.

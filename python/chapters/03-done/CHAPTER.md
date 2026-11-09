@@ -1,6 +1,6 @@
 # Chapter 03 — The done command (Python)
 
-**Video:** Python: Done (tag `video/python-003`)
+**Video:** [Edit a Text File Safely in Python: the done Command](https://youtu.be/jhPUsdKYUWc) on YouTube
 
 **Goal:** answer the challenge from chapters 01 and 02. `python3 tasks.py done "title"` marks one task
 finished, in the tasks file itself, and leaves every other byte of the file alone.

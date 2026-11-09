@@ -1,6 +1,6 @@
 # Chapter 03 — The done command (Safe C)
 
-**Video:** Safe C: Done (tag `video/c-003`)
+**Video:** [Never Half-Write a File in C: the done Command](https://youtu.be/tdUVaWJdoqQ) on YouTube
 
 **Goal:** the challenge from chapters 01 and 02, in `c/modules/`. `./build/tracker done "title"`
 marks one task finished, in the tasks file itself, and leaves every other byte of the file alone.
