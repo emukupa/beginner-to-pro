@@ -10,6 +10,7 @@ the `dotnet` command, the C# compiler and the runtime.
 | --- | --- | --- |
 | [`concepts/`](concepts/) | one lesson per file, run by `Program.cs`: `dotnet run` runs them all, `dotnet run -- 7` one, `dotnet run -p:Bug=7 -- 7` with its bug; tests in [`concepts.tests/`](concepts.tests/) | 00 |
 | [`one-file/`](one-file/) | the whole tracker in `Program.cs` | 01 |
+| [`modules/`](modules/) | the same program as a class library, a program and a test project | 02 |
 
 ```bash
 cd csharp/concepts
@@ -22,12 +23,15 @@ cd ../concepts.tests && dotnet test   # the lessons' tests (MSTest, fetched from
 ```bash
 cd csharp/one-file
 dotnet build -c Release -o build && ../../contract/run.sh "$PWD/build/tracker"   # must match Python byte for byte
+cd ../modules
+dotnet test && dotnet build Cli -c Release -o build && ../../contract/run.sh "$PWD/build/tracker"
 ```
 
 | Chapter | Start | End | Video |
 | --- | --- | --- | --- |
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/csharp/00-concepts/start` | `course/csharp/00-concepts/end` | `video/csharp-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/csharp/01-one-file/start` | `course/csharp/01-one-file/end` | `video/csharp-001` |
+| [02 Modules](chapters/02-modules/CHAPTER.md) | `course/csharp/02-modules/start` | `course/csharp/02-modules/end` | `video/csharp-002` |
 
 VS Code: install the **C# Dev Kit** extension (it brings the C# extension with it). It runs the same
 compiler as `dotnet build` as you type, so nullable warnings and missing `switch` cases show up
