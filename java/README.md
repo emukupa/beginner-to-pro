@@ -38,6 +38,7 @@ cd ../modules && make test && make check        # the same for modules/
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/java/01-one-file/start` | `course/java/01-one-file/end` | `video/java-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/java/02-modules/start` | `course/java/02-modules/end` | `video/java-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/java/03-done/start` | `course/java/03-done/end` | `video/java-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/java/04-undo/start` | `course/java/04-undo/end` | `video/java-004` |
 
 VS Code: install Microsoft's **Extension Pack for Java**. It compiles as you type, so javac's errors
 (and the ones every `make bug` shows) appear under the code before you build.
