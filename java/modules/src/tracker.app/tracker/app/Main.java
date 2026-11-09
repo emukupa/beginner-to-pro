@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import tracker.chart.Chart;
+import java.util.Arrays;
+import java.util.Locale;
+import tracker.models.Status;
 import tracker.models.TagCount;
 import tracker.models.Task;
 import tracker.models.UrgentTask;
@@ -49,11 +52,37 @@ public final class Main {
         return Optional.of(match.group(1).equals("-") ? -value : value);
     }
 
-    // tracker done "title": marks one task finished. Returns the exit code.
-    static int done(List<String> words) throws IOException {
+    // What a status command does: an enum whose constants carry the status they set and what they
+    // print. Python's CHANGES dict, with the command words as the constants' names.
+    enum Change {
+        DONE(Status.DONE, "Done", "Already done"),
+        UNDO(Status.TODO, "Undone", "Not done yet");
+
+        final Status sets;
+        final String changed; // printed after changing it
+        final String already; // printed when the task already had that status
+
+        Change(Status sets, String changed, String already) {
+            this.sets = sets;
+            this.changed = changed;
+            this.already = already;
+        }
+
+        // The word typed for it: "done" or "undo".
+        String word() {
+            return name().toLowerCase(Locale.ROOT);
+        }
+
+        static Optional<Change> of(String word) {
+            return Arrays.stream(values()).filter(c -> c.word().equals(word)).findFirst();
+        }
+    }
+
+    // tracker done|undo "title": sets one task's status. Returns the exit code.
+    static int change(Change change, List<String> words) throws IOException {
         String title = Text.strip(String.join(" ", words));
         if (title.isEmpty()) {
-            err.println("Usage: done \"task title\"");
+            err.println("Usage: " + change.word() + " \"task title\"");
             return 2;
         }
         String env = System.getenv("TASKS_FILE");
@@ -74,23 +103,24 @@ public final class Main {
             return 1;
         }
         Task task = found.get();
-        if (task.isDone()) {
-            out.println("Already done: " + task.title);
+        if (task.status.equals(change.sets.word())) {
+            out.println(change.already + ": " + task.title);
             return 0;
         }
         try {
-            Storage.markDone(path, task);
+            Storage.setStatus(path, task, change.sets);
         } catch (IOException e) {
             err.println("Couldn't write " + path);
             return 1;
         }
-        out.println("Done: " + task.title);
+        out.println(change.changed + ": " + task.title);
         return 0;
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length > 0 && args[0].equals("done")) { // a second mode: tracker done "title"
-            System.exit(done(List.of(args).subList(1, args.length)));
+        if (args.length > 0) { // a second mode: tracker done "title", tracker undo "title"
+            Optional<Change> change = Change.of(args[0]);
+            if (change.isPresent()) System.exit(change(change.get(), List.of(args).subList(1, args.length)));
         }
         String env = System.getenv("TASKS_FILE");
         Path path = Path.of(args.length > 0 ? args[0] : env != null ? env : "tasks.txt");

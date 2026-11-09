@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import tracker.models.Status;
 import tracker.models.Task;
 import tracker.parsing.Parsing;
 
@@ -40,8 +41,8 @@ public final class Storage {
         return Parsing.parseLine(line).filter(found -> found.title.equals(task.title) && found.status.equals(task.status)).isPresent();
     }
 
-    // Rewrites the line holding this task as [done], leaving every other byte of the file alone.
-    public static void markDone(Path path, Task task) throws IOException {
+    // Rewrites the line holding this task as [status], leaving every other byte of the file alone.
+    public static void setStatus(Path path, Task task, Status status) throws IOException {
         // Each line keeps its own ending (\n, \r\n or \r), as Python's readlines() does with newline="".
         List<String> lines = new ArrayList<>();
         Matcher m = Pattern.compile("[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$").matcher(Files.readString(path));
@@ -50,7 +51,7 @@ public final class Storage {
             String line = lines.get(i);
             if (holds(line, task)) {
                 int open = line.indexOf('['), close = line.indexOf(']', open);
-                lines.set(i, line.substring(0, open) + "[done]" + line.substring(close + 1));
+                lines.set(i, line.substring(0, open) + "[" + status.word() + "]" + line.substring(close + 1));
                 break;
             }
         }
