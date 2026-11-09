@@ -31,6 +31,7 @@ cd ../modules && swift test && swift build -c release && ../../contract/run.sh "
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/swift/00-concepts/start` | `course/swift/00-concepts/end` | `video/swift-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/swift/01-one-file/start` | `course/swift/01-one-file/end` | `video/swift-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/swift/02-modules/start` | `course/swift/02-modules/end` | `video/swift-002` |
+| [03 Done](chapters/03-done/CHAPTER.md) | `course/swift/03-done/start` | `course/swift/03-done/end` | `video/swift-003` |
 
 VS Code: install the **Swift** extension (from the Swift Server Work Group). It runs SourceKit-LSP,
 so the compiler's errors, Swift 6's data-race checks included, show up as you type, and it can run
