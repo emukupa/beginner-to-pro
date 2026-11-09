@@ -23,6 +23,10 @@ Each step is a video, and each video points at a branch you can check out.
 | Rust | [`rust/`](rust/) | ready | ready | ready | ready | ready |
 | Go | [`go/`](go/) | ready | ready | ready | ready | ready |
 | TypeScript (Node) | [`node/`](node/) | ready | ready | ready | ready | ready |
+| C# | [`csharp/`](csharp/) | planned | planned | planned | planned | planned |
+| Java | [`java/`](java/) | planned | planned | planned | planned | planned |
+| Kotlin | [`kotlin/`](kotlin/) | planned | planned | planned | planned | planned |
+| Swift | [`swift/`](swift/) | planned | planned | planned | planned | planned |
 
 The plan for every language is in [docs/languages.md](docs/languages.md).
 

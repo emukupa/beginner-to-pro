@@ -40,6 +40,10 @@ language.
 | Rust | `struct Task`; `enum Status { Todo, Done, Other(String) }` (an enum carrying data) and `enum Kind`; `impl` blocks, `Display` and `FromStr` traits; `Option`, `Result`, `?` and a custom error enum with `From`; `Vec<Task>`, slices, `HashMap` with first-seen order kept in a `Vec`; iterators and closures; a lifetime on `TagCount<'a>` borrowing tag names; `Rc<str>` to share tag names between tasks, and why `Arc` is needed instead once threads arrive; `#![forbid(unsafe_code)]`; `#[test]` |
 | Go | structs; embedding (`UrgentTask` embeds `Task`: Go's answer to inheritance); interfaces (`fmt.Stringer`); value vs pointer receivers; `iota` constants with a `String()` method as Go's enums; slices and maps; multiple returns and error values, sentinel errors, `%w` wrapping and `errors.Is`; `defer`; generics for `TopN[T]`; closures; `sort.SliceStable`; `bufio.Scanner`; goroutines, channels, `select` and `sync.WaitGroup` once there's concurrency; table-driven tests |
 | TypeScript | classes and inheritance; interfaces and type aliases; a discriminated union for status (and a TypeScript `enum`, to show why the union is usually better); generics for `topN<T>`; `readonly`; `Map` (it keeps insertion order, which the ties need) and `Set`; generators; `async`/`await` with `readline/promises`; type guards; `satisfies`; optional chaining and `??`; ES modules; `node:test` |
+| C# | classes with `virtual`/`override` for `UrgentTask`, and `record` types for values like `TagCount`; `enum Status`; properties with `init`; nullable reference types (`Task?`) checked by the compiler; LINQ (`Where`, `GroupBy`, `OrderByDescending`, which is stable); `Dictionary` with first-seen order kept in a `List`; pattern matching and switch expressions; exceptions with `when` filters; `using` declarations for files and the temp file (`IDisposable`); generics with constraints for `TopN<T>`; `Span`-free string handling with `string.Split` options; top-level statements; xUnit-free tests with `dotnet test` and a minimal MSTest project |
+| Java | classes with `extends`/`@Override` for `UrgentTask`; `record TagCount`; `enum Status` with fields and methods; a `sealed interface` and pattern-matching `switch` for commands; `Optional<Task>` from the parser; checked exceptions (`IOException`) vs unchecked; `try`-with-resources (`AutoCloseable`) for files and the temp file; `List`, `LinkedHashMap` (insertion order, which the ties need); streams and collectors; generics for `topN`; `var`; text blocks; packages and `module-info.java`; JUnit-free tests with plain `assert` and a tiny runner |
+| Kotlin | `data class Task` and `open`/`override` for `UrgentTask`; `enum class Status` with properties; a `sealed interface` for commands with an exhaustive `when`; null safety (`Task?`, `?.`, `?:`, `!!` and why not); extension functions (`String.pythonStrip()`); `val` vs `var`; collection functions (`filter`, `groupingBy`, `sortedByDescending`, which is stable); `LinkedHashMap` by default from `mutableMapOf`; `use { }` for files and the temp file; `Result` and `runCatching`; generics with `reified` where it helps; packages and `internal`; `kotlin.test` |
+| Swift | `struct Task` (a value type) and a `protocol` for anything printable, because classes and inheritance are the exception in Swift; `enum Status` with associated values (`.other(String)`), raw values and an exhaustive `switch`; optionals (`Task?`, `if let`, `guard let`, `??`); `throws`/`try`/`do`-`catch` with a custom `Error` enum; `defer` for cleanup; value semantics and copy-on-write arrays; `Dictionary` with first-seen order kept in an `Array`; `sorted(by:)` (stable since Swift 5); generics with `where` clauses for `topN`; extensions; `CustomStringConvertible`; Swift Package Manager modules with `public`/`internal`; `swift test` |
 
 Features that need a reason the tracker doesn't have yet (threads, channels, `Arc`, futures) get
 one in a shared later chapter: **loading several task files at once and merging them**. Python
@@ -72,8 +76,15 @@ goroutines and channels, threads with `Arc<Mutex<_>>` or `mpsc`, `std::jthread` 
    cycles outright.
 8. **TypeScript (Node)**: types on top of the language of the web, closing the loop back to a
    dynamic runtime.
-
-More can join on the same pattern (Java, C#, Swift) without changing anything that exists.
+9. **C#**: classes like TypeScript's, compiled ahead of time, with records, LINQ and nullable
+   reference types; `using` for cleanup, as TypeScript just learned.
+10. **Java**: the same object model as C#, older and more explicit: checked exceptions,
+    try-with-resources, records, sealed interfaces and streams.
+11. **Kotlin**: Java's platform with Java's ceremony removed: null safety in the type system, data
+    classes, `when`, extension functions, and every Java library still in reach.
+12. **Swift**: last, and the most different of the four: value types first, enums that carry data
+    (like Rust's), optionals, `throws`, and `defer` (like Zig's), compiled with no garbage collector
+    but with automatic reference counting.
 
 ## Language by language
 
@@ -168,6 +179,46 @@ tools instead of by hope:
 - **Traps:** `Math.round` rounds halves up, so the chapter writes a round-half-to-even helper.
   Prompts must be written to stdout without a newline.
 - **Contract:** `contract/run.sh node "$PWD/node/tasks.ts"`
+
+### C# (`csharp/`)
+
+- **01:** `csharp/one-file/Program.cs`, one file with top-level statements, in a .NET 10 console
+  project. `class Task` and `class UrgentTask : Task` with `override`, as in Python.
+- **02:** one project with a folder and a namespace per job; `internal` keeps types inside the
+  assembly; a test project beside it.
+- **Traps:** `Math.Round` defaults to banker's rounding (to even), which is what Python does; but
+  `$"{x:F0}"` formatting rounds halves away from zero. `string.Split()` with no arguments splits on
+  single whitespace characters, not runs. `Console.ReadLine()` returns `null` at the end of input.
+- **Contract:** `dotnet build -c Release && contract/run.sh "$PWD/csharp/one-file/bin/Release/net10.0/tracker"`
+
+### Java (`java/`)
+
+- **01:** `java/one-file/Tracker.java`, run straight from source with `java Tracker.java` (no
+  build step for one file).
+- **02:** packages in `java/modules/src/`, compiled with `javac -d build`, run with `java -cp build`.
+  Package-private by default; `public` is the export.
+- **Traps:** `Math.round` rounds halves up, so the tracker uses `Math.rint` (half to even).
+  `String.strip()` is Unicode-aware, `trim()` is not; neither is Python's exact set.
+  `System.out` must be flushed before reading input.
+- **Contract:** `contract/run.sh java "$PWD/java/one-file/Tracker.java"`
+
+### Kotlin (`kotlin/`)
+
+- **01:** `kotlin/one-file/tracker.kt`, compiled with `kotlinc` into a runnable jar.
+- **02:** a Gradle project with a package per job; `internal` limits a name to the module.
+- **Traps:** `roundToInt()` rounds halves up; `Math.rint` is half to even. `readLine()` returns
+  `null` at the end of input. Startup time of the JVM, which the contract doesn't mind.
+- **Contract:** `contract/run.sh java -jar "$PWD/kotlin/one-file/build/tracker.jar"`
+
+### Swift (`swift/`)
+
+- **01:** `swift/one-file/tracker.swift`, compiled with `swiftc -O`.
+- **02:** a Swift package (`Package.swift`) with a library target and an executable target;
+  `public` is the export across modules, `internal` is the default.
+- **Traps:** `.rounded()` defaults to `.toNearestOrAwayFromZero`; Python needs
+  `.toNearestOrEven`. `String.count` counts grapheme clusters, Python counts code points:
+  `unicodeScalars.count` matches. `readLine()` returns `nil` at the end of input.
+- **Contract:** `contract/run.sh "$PWD/swift/one-file/build/tracker"`
 
 ## Per-language folder shape
 
