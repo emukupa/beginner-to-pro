@@ -23,7 +23,7 @@
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
-  "include": ["concepts/**/*.ts", "one-file/**/*.ts"],
+  "include": ["concepts/**/*.ts", "one-file/**/*.ts", "modules/**/*.ts"],
   // The deliberate mistakes and the enum live apart, so the normal check stays clean.
   "exclude": ["concepts/bugs/lesson_*.ts", "concepts/extras"]
 }
