@@ -10,6 +10,7 @@ import kotlin.io.path.appendText
 import kotlin.io.path.getPosixFilePermissions
 import kotlin.io.path.readText
 import kotlin.io.path.setPosixFilePermissions
+import tracker.models.Status
 import tracker.models.Task
 import tracker.parsing.parseLine
 
@@ -24,8 +25,8 @@ fun appendTitles(path: Path, titles: List<String>) = path.appendText(titles.join
 private fun holds(line: String, task: Task): Boolean =
     parseLine(line)?.let { it.title == task.title && it.status == task.status } ?: false
 
-// Rewrites the line holding this task as [done], leaving every other byte of the file alone.
-fun markDone(path: Path, task: Task) {
+// Rewrites the line holding this task as [status], leaving every other byte of the file alone.
+fun setStatus(path: Path, task: Task, status: Status) {
     // Each line keeps its own ending (\n, \r\n or \r), as Python's readlines() does with newline="".
     val lines = Regex("[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$").findAll(path.readText()).map { it.value }.toMutableList()
     val at = lines.indexOfFirst { holds(it, task) }
@@ -33,7 +34,7 @@ fun markDone(path: Path, task: Task) {
         val line = lines[at]
         val open = line.indexOf('[')
         val close = line.indexOf(']', open)
-        lines[at] = line.substring(0, open) + "[done]" + line.substring(close + 1)
+        lines[at] = line.substring(0, open) + "[${status.word}]" + line.substring(close + 1)
     }
 
     // use {} closes the TempFile when the block ends, however it ends. It isn't a keyword: it's an

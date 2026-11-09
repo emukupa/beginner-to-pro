@@ -12,3 +12,17 @@ class UrgentTask(title: String, status: String, tags: List<String>) : Task(title
 }
 
 data class TagCount(val tag: String, val count: Int)
+
+// The statuses a command can set. A task read from the file keeps whatever word it had, as a string.
+enum class Status {
+    TODO,
+    DONE;
+
+    // How it's spelled between the brackets. `when` used as a value must cover every constant: add
+    // one to the enum and the build stops here.
+    val word: String
+        get() = when (this) {
+            TODO -> "todo"
+            DONE -> "done"
+        }
+}

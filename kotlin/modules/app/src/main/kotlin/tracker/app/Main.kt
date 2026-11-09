@@ -11,11 +11,12 @@ import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import kotlin.system.exitProcess
 import tracker.chart.drawChart
+import tracker.models.Status
 import tracker.models.UrgentTask
 import tracker.parsing.TAG_MARKER
 import tracker.storage.appendTitles
 import tracker.storage.loadTasks
-import tracker.storage.markDone
+import tracker.storage.setStatus
 import tracker.tasklist.DEFAULT_TOP
 import tracker.tasklist.addTasks
 import tracker.tasklist.findTask
@@ -46,11 +47,25 @@ fun parseWholeNumber(text: String): Int? {
     return if (sign == "-") -value else value
 }
 
-// tracker done "title": marks one task finished. Returns the exit code.
-fun done(words: List<String>): Int {
+// What a status command does: an enum whose constants carry the status they set and what they
+// print. Python's CHANGES dict, with the command words as the constants' names.
+enum class Change(val sets: Status, val changed: String, val already: String) {
+    DONE(Status.DONE, "Done", "Already done"),
+    UNDO(Status.TODO, "Undone", "Not done yet");
+
+    val word: String get() = name.lowercase() // the word typed for it: "done" or "undo"
+
+    companion object {
+        // Change.of("undo"): called on the class itself, like a static method.
+        fun of(word: String?): Change? = entries.firstOrNull { it.word == word }
+    }
+}
+
+// tracker done|undo "title": sets one task's status. Returns the exit code.
+fun change(change: Change, words: List<String>): Int {
     val title = words.joinToString(" ").pythonStrip()
     if (title.isEmpty()) {
-        System.err.println("Usage: done \"task title\"")
+        System.err.println("Usage: ${change.word} \"task title\"")
         return 2
     }
     val path = Path.of(System.getenv("TASKS_FILE") ?: "tasks.txt")
@@ -63,28 +78,27 @@ fun done(words: List<String>): Int {
         System.err.println("Couldn't read $path")
         return 1
     }
-    // ?: with return: if findTask gives null, leave right here. After it, task can't be null.
     val task = findTask(tasks, title) ?: run {
         System.err.println("No task called \"$title\"")
         return 1
     }
-    if (task.isDone) {
-        println("Already done: ${task.title}")
+    if (task.status == change.sets.word) {
+        println("${change.already}: ${task.title}")
         return 0
     }
     try {
-        markDone(path, task)
+        setStatus(path, task, change.sets)
     } catch (e: IOException) {
         System.err.println("Couldn't write $path")
         return 1
     }
-    println("Done: ${task.title}")
+    println("${change.changed}: ${task.title}")
     return 0
 }
 
 fun main(args: Array<String>) {
     System.setOut(PrintStream(FileOutputStream(FileDescriptor.out), true, Charsets.UTF_8))
-    if (args.firstOrNull() == "done") exitProcess(done(args.drop(1))) // a second mode: tracker done "title"
+    Change.of(args.firstOrNull())?.let { exitProcess(change(it, args.drop(1))) } // tracker done|undo "title"
     val path = Path.of(args.firstOrNull() ?: System.getenv("TASKS_FILE") ?: "tasks.txt")
 
     val tasks = try {
