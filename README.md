@@ -26,7 +26,7 @@ Each step is a video, and each video points at a branch you can check out.
 | C# | [`csharp/`](csharp/) | ready | ready | ready | ready | ready |
 | Java | [`java/`](java/) | ready | ready | ready | ready | ready |
 | Kotlin | [`kotlin/`](kotlin/) | ready | ready | ready | ready | ready |
-| Swift | [`swift/`](swift/) | ready | ready | planned | planned | planned |
+| Swift | [`swift/`](swift/) | ready | ready | ready | planned | planned |
 
 The plan for every language is in [docs/languages.md](docs/languages.md).
 
