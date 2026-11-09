@@ -7,3 +7,9 @@ build/
 target/
 node_modules/
 dist/
+bin/
+obj/
+.build/
+.gradle/
+.kotlin/
+*.class
