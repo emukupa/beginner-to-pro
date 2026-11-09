@@ -11,6 +11,7 @@ add methods to types you don't own. Needs `kotlinc` (written with 2.4.20) on a J
 | --- | --- | --- |
 | [`concepts/`](concepts/) | one package per concept, run by `src/Main.kt`: `make run` runs them all, `make run N=7` one, `make bug N=7` with its bug | 00 |
 | [`one-file/`](one-file/) | the whole tracker in `tracker.kt`, built into a jar | 01 |
+| [`modules/`](modules/) | the same program as packages in a two-module Gradle build, with tests | 02 |
 
 ```bash
 cd kotlin/concepts
@@ -26,12 +27,14 @@ small program, because the compiler is itself a JVM program. `make` only rebuild
 ```bash
 cd kotlin/one-file
 make check                         # the contract: must match Python byte for byte
+cd ../modules && ./gradlew installDist test   # chapter 02: Gradle (downloads itself the first time)
 ```
 
 | Chapter | Start | End | Video |
 | --- | --- | --- | --- |
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/kotlin/00-concepts/start` | `course/kotlin/00-concepts/end` | `video/kotlin-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/kotlin/01-one-file/start` | `course/kotlin/01-one-file/end` | `video/kotlin-001` |
+| [02 Modules](chapters/02-modules/CHAPTER.md) | `course/kotlin/02-modules/start` | `course/kotlin/02-modules/end` | `video/kotlin-002` |
 
 IntelliJ IDEA (Community is free) knows Kotlin out of the box: open `kotlin/concepts/` and it
 shows kotlinc's errors as you type, plus hints kotlinc doesn't give, such as unused variables.
