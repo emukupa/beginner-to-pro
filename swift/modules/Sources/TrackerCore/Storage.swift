@@ -116,8 +116,8 @@ func linesKeepingEndings(_ text: String) -> [String] {
     return lines
 }
 
-// Rewrites the line holding this task as [done], leaving every other byte of the file alone.
-public func markDone(_ path: String, _ task: Task) throws(WriteError) {
+// Rewrites the line holding this task as [status], leaving every other byte of the file alone.
+public func setStatus(_ path: String, _ task: Task, _ status: Status) throws(WriteError) {
     guard let text = try? String(contentsOfFile: path, encoding: .utf8) else { throw .cantWrite }
     var lines = linesKeepingEndings(text)
     if let at = lines.firstIndex(where: { holds($0, task) }) {
@@ -125,7 +125,7 @@ public func markDone(_ path: String, _ task: Task) throws(WriteError) {
         let open = scalars.firstIndex(of: "[")!
         let close = scalars[open...].firstIndex(of: "]")!
         var line = String.UnicodeScalarView(scalars[..<open])
-        line.append(contentsOf: "[done]".unicodeScalars)
+        line.append(contentsOf: "[\(status.word)]".unicodeScalars)
         line.append(contentsOf: scalars[(close + 1)...])
         lines[at] = String(line)
     }

@@ -34,11 +34,27 @@ func fail(_ message: String) -> Never {
     exit(1)
 }
 
-// tracker done "title": marks one task finished. Returns the exit code.
-func done(_ words: ArraySlice<String>) -> Int32 {
+// What a status command does. A String raw value per case: Change(rawValue: "undo") turns the
+// typed word into .undo, or nil for anything else, so the words can't disagree with the cases.
+enum Change: String, CaseIterable {
+    case done, undo
+
+    var sets: Status {
+        switch self {
+        case .done: .done
+        case .undo: .todo
+        }
+    }
+
+    var changed: String { self == .done ? "Done" : "Undone" } // printed after changing it
+    var already: String { self == .done ? "Already done" : "Not done yet" } // nothing to change
+}
+
+// tracker done|undo "title": sets one task's status. Returns the exit code.
+func change(_ change: Change, _ words: ArraySlice<String>) -> Int32 {
     let title = words.joined(separator: " ").pythonStrip()
     guard !title.isEmpty else {
-        FileHandle.standardError.write(Data("Usage: done \"task title\"\n".utf8))
+        FileHandle.standardError.write(Data("Usage: \(change.rawValue) \"task title\"\n".utf8))
         return 2
     }
     let path = ProcessInfo.processInfo.environment["TASKS_FILE"] ?? "tasks.txt"
@@ -46,7 +62,6 @@ func done(_ words: ArraySlice<String>) -> Int32 {
     do throws(LoadError) {
         tasks = try loadTasks(path)
     } catch {
-        // error is a LoadError, not any Error, so this switch can cover every case without a default.
         switch error {
         case .notFound: FileHandle.standardError.write(Data("Couldn't find \(path)\n".utf8))
         case .unreadable: FileHandle.standardError.write(Data("Couldn't read \(path)\n".utf8))
@@ -57,22 +72,24 @@ func done(_ words: ArraySlice<String>) -> Int32 {
         FileHandle.standardError.write(Data("No task called \"\(title)\"\n".utf8))
         return 1
     }
-    if task.isDone {
-        print("Already done: \(task.title)")
+    if task.status == change.sets {
+        print("\(change.already): \(task.title)")
         return 0
     }
     do {
-        try markDone(path, task)
+        try setStatus(path, task, change.sets)
     } catch {
         FileHandle.standardError.write(Data("Couldn't write \(path)\n".utf8))
         return 1
     }
-    print("Done: \(task.title)")
+    print("\(change.changed): \(task.title)")
     return 0
 }
 
 let arguments = CommandLine.arguments.dropFirst()
-if arguments.first == "done" { exit(done(arguments.dropFirst())) } // a second mode: tracker done "title"
+if let word = arguments.first, let command = Change(rawValue: word) { // tracker done|undo "title"
+    exit(change(command, arguments.dropFirst()))
+}
 let path = arguments.first ?? ProcessInfo.processInfo.environment["TASKS_FILE"] ?? "tasks.txt"
 
 var tasks: [Task]

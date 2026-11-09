@@ -7,6 +7,18 @@ public enum Status: Equatable, Sendable {
     case other(String)
 }
 
+extension Status {
+    // How it's spelled between the brackets. A switch must cover every case: add one to Status and
+    // the build stops here. .other carries its own word, so every status has a spelling.
+    public var word: String {
+        switch self {
+        case .todo: "todo"
+        case .done: "done"
+        case .other(let word): word
+        }
+    }
+}
+
 public enum Kind: Sendable {
     case plain, urgent
 }
