@@ -30,6 +30,7 @@ cd node
 | [00 Concepts](chapters/00-concepts/CHAPTER.md) | `course/node/00-concepts/start` | `course/node/00-concepts/end` | `video/node-000` |
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/node/01-one-file/start` | `course/node/01-one-file/end` | `video/node-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/node/02-modules/start` | `course/node/02-modules/end` | `video/node-002` |
+| [03 Done](chapters/03-done/CHAPTER.md) | `course/node/03-done/start` | `course/node/03-done/end` | `video/node-003` |
 
 VS Code understands TypeScript out of the box; it reads `tsconfig.json`, so the editor shows the
 same errors as `npm run check`.
