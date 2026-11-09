@@ -34,16 +34,56 @@ func fail(_ message: String) -> Never {
     exit(1)
 }
 
+// tracker done "title": marks one task finished. Returns the exit code.
+func done(_ words: ArraySlice<String>) -> Int32 {
+    let title = words.joined(separator: " ").pythonStrip()
+    guard !title.isEmpty else {
+        FileHandle.standardError.write(Data("Usage: done \"task title\"\n".utf8))
+        return 2
+    }
+    let path = ProcessInfo.processInfo.environment["TASKS_FILE"] ?? "tasks.txt"
+    let tasks: [Task]
+    do throws(LoadError) {
+        tasks = try loadTasks(path)
+    } catch {
+        // error is a LoadError, not any Error, so this switch can cover every case without a default.
+        switch error {
+        case .notFound: FileHandle.standardError.write(Data("Couldn't find \(path)\n".utf8))
+        case .unreadable: FileHandle.standardError.write(Data("Couldn't read \(path)\n".utf8))
+        }
+        return 1
+    }
+    guard let task = findTask(tasks, title) else {
+        FileHandle.standardError.write(Data("No task called \"\(title)\"\n".utf8))
+        return 1
+    }
+    if task.isDone {
+        print("Already done: \(task.title)")
+        return 0
+    }
+    do {
+        try markDone(path, task)
+    } catch {
+        FileHandle.standardError.write(Data("Couldn't write \(path)\n".utf8))
+        return 1
+    }
+    print("Done: \(task.title)")
+    return 0
+}
+
 let arguments = CommandLine.arguments.dropFirst()
+if arguments.first == "done" { exit(done(arguments.dropFirst())) } // a second mode: tracker done "title"
 let path = arguments.first ?? ProcessInfo.processInfo.environment["TASKS_FILE"] ?? "tasks.txt"
 
 var tasks: [Task]
-do {
+do throws(LoadError) {
     tasks = try loadTasks(path)
-} catch .notFound {
-    fail("Couldn't find \(path)") // loadTasks throws only LoadError, so these two cases are all
-} catch .unreadable {
-    fail("Couldn't read \(path)")
+} catch {
+    // error is a LoadError, not any Error, so this switch can cover every case without a default.
+    switch error {
+    case .notFound: fail("Couldn't find \(path)")
+    case .unreadable: fail("Couldn't read \(path)")
+    }
 }
 
 var newTitles: [String] = []

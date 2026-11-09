@@ -9,6 +9,12 @@ public func addTasks(_ tasks: inout [Task], _ titles: [String]) -> Int {
     return added.count
 }
 
+// The first task whose title matches, ignoring case and extra spaces; nil if there isn't one.
+public func findTask(_ tasks: [Task], _ title: String) -> Task? {
+    let wanted = title.pythonWords().joined(separator: " ").lowercased()
+    return tasks.first { $0.title.lowercased() == wanted }
+}
+
 // Every tag with how many tasks carry it, in the order each first appears. A Dictionary has no
 // order, so the array keeps it and the dictionary finds each tag's place.
 public func countTags(_ tasks: [Task], includeDone: Bool = true) -> [TagCount] {

@@ -37,3 +37,13 @@ import Testing
     drawChart([TagCount(tag: "home", count: 2), TagCount(tag: "work", count: 1)], width: 4) { lines.append($0) }
     #expect(lines == ["home  ████ 2", "work  ██ 1"])
 }
+
+@Test func findsAMessyTitle() {
+    let tasks = ["[todo] Review pull request #work"].compactMap(parseLine)
+    #expect(findTask(tasks, "  review PULL   request ")?.title == "Review pull request")
+    #expect(findTask(tasks, "Walk dog") == nil)
+}
+
+@Test func linesKeepTheirEndings() {
+    #expect(linesKeepingEndings("a\r\nb\nc\rd") == ["a\r\n", "b\n", "c\r", "d"])
+}
