@@ -25,7 +25,7 @@ Each step is a video, and each video points at a branch you can check out.
 | TypeScript (Node) | [`node/`](node/) | ready | ready | ready | ready | ready |
 | C# | [`csharp/`](csharp/) | ready | ready | ready | ready | ready |
 | Java | [`java/`](java/) | ready | ready | ready | ready | ready |
-| Kotlin | [`kotlin/`](kotlin/) | ready | ready | planned | planned | planned |
+| Kotlin | [`kotlin/`](kotlin/) | ready | ready | ready | planned | planned |
 | Swift | [`swift/`](swift/) | ready | planned | planned | planned | planned |
 
 The plan for every language is in [docs/languages.md](docs/languages.md).
