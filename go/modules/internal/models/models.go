@@ -10,8 +10,21 @@ type Status int
 const (
 	Todo Status = iota
 	Done
-	Other // a status we didn't recognise; Task.StatusWord keeps the word
+	Other       // a status we didn't recognise; Task.StatusWord keeps the word
+	numStatuses // not a status: how many there are, so a test can check every one
 )
+
+// String spells a status between the brackets. Go's switch doesn't check that every value is
+// handled, so models_test.go does: add a status without a spelling, and the test fails.
+func (s Status) String() string {
+	switch s {
+	case Todo:
+		return "todo"
+	case Done:
+		return "done"
+	}
+	return "" // Other has no single spelling: each task keeps its own in StatusWord
+}
 
 // Kind replaces Python's UrgentTask subclass: Go has no inheritance.
 type Kind int

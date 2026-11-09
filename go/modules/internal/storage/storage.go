@@ -57,13 +57,17 @@ func holds(line string, task models.Task) bool {
 	return ok && found.Title == task.Title && found.StatusWord == task.StatusWord
 }
 
-// MarkDone rewrites the line holding this task as [done], leaving every other byte of the file
+// SetStatus rewrites the line holding this task as [status], leaving every other byte of the file
 // alone. It writes a new file beside the old one, then renames it over, so the tasks file is never
 // half-written.
 //
-// err is a named result, so the deferred function below can read it: if MarkDone is returning an
+// err is a named result, so the deferred function below can read it: if SetStatus is returning an
 // error, the half-made file is removed. That's Go's errdefer.
-func MarkDone(path string, task models.Task) (err error) {
+func SetStatus(path string, task models.Task, status models.Status) (err error) {
+	word := status.String()
+	if word == "" {
+		return fmt.Errorf("status %d has no spelling", status) // before anything is opened
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -83,7 +87,7 @@ func MarkDone(path string, task models.Task) (err error) {
 			continue
 		}
 		out.WriteString(line[:open]) // any spaces before the bracket
-		out.WriteString("[done]")
+		out.WriteString("[" + word + "]")
 		out.WriteString(line[open+end+1:]) // the title, tags and line ending
 		changed = true
 	}

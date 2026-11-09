@@ -66,11 +66,25 @@ func parseWholeNumber(text string) (int, bool) {
 	return value, true
 }
 
-// doneCommand runs "tracker done title": it marks one task finished, and returns the exit code.
-func doneCommand(words []string) int {
+// change is what a status command does: the status it sets, and what it prints.
+type change struct {
+	sets    models.Status
+	changed string // printed after changing it
+	already string // printed when the task already had that status
+}
+
+// changes is Python's CHANGES dict: the command words are the keys.
+var changes = map[string]change{
+	"done": {sets: models.Done, changed: "Done", already: "Already done"},
+	"undo": {sets: models.Todo, changed: "Undone", already: "Not done yet"},
+}
+
+// changeCommand runs "tracker done|undo title": it sets one task's status, and returns the exit code.
+func changeCommand(name string, words []string) int {
+	c := changes[name]
 	title := strings.TrimSpace(strings.Join(words, " "))
 	if title == "" {
-		fmt.Fprintln(os.Stderr, `Usage: done "task title"`)
+		fmt.Fprintf(os.Stderr, "Usage: %s \"task title\"\n", name)
 		return 2
 	}
 	path, set := os.LookupEnv("TASKS_FILE")
@@ -90,21 +104,23 @@ func doneCommand(words []string) int {
 		fmt.Fprintf(os.Stderr, "No task called \"%s\"\n", title) // not %q: that would escape quotes inside
 		return 1
 	}
-	if task.IsDone() {
-		fmt.Printf("Already done: %s\n", task.Title)
+	if task.Status == c.sets {
+		fmt.Printf("%s: %s\n", c.already, task.Title)
 		return 0
 	}
-	if err := storage.MarkDone(path, *task); err != nil {
+	if err := storage.SetStatus(path, *task, c.sets); err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't write %s\n", path)
 		return 1
 	}
-	fmt.Printf("Done: %s\n", task.Title)
+	fmt.Printf("%s: %s\n", c.changed, task.Title)
 	return 0
 }
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "done" { // a second mode: tracker done "title"
-		os.Exit(doneCommand(os.Args[2:]))
+	if len(os.Args) > 1 {
+		if _, ok := changes[os.Args[1]]; ok { // a second mode: tracker done "title", tracker undo "title"
+			os.Exit(changeCommand(os.Args[1], os.Args[2:]))
+		}
 	}
 
 	path, set := os.LookupEnv("TASKS_FILE") // set but empty is still set, as in Python
