@@ -186,8 +186,8 @@ tools instead of by hope:
   project. `class Task` and `class UrgentTask : Task` with `override`, as in Python.
 - **02:** one project with a folder and a namespace per job; `internal` keeps types inside the
   assembly; a test project beside it.
-- **Traps:** `Math.Round` defaults to banker's rounding (to even), which is what Python does; but
-  `$"{x:F0}"` formatting rounds halves away from zero. `string.Split()` with no arguments splits on
+- **Traps:** `Math.Round` defaults to banker's rounding (to even), which is what Python does, and
+  so does `$"{x:F0}"` on .NET 10; the custom format `"0"` rounds halves away from zero. `string.Split()` with no arguments splits on
   single whitespace characters, not runs. `Console.ReadLine()` returns `null` at the end of input.
 - **Contract:** `dotnet build -c Release && contract/run.sh "$PWD/csharp/one-file/bin/Release/net10.0/tracker"`
 
