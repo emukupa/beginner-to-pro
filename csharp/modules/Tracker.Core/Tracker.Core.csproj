@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- CS8524: a switch over an enum "misses" unnamed values such as (Status)42. We only want
+         CS8509, which names a real member the switch forgot. -->
+    <NoWarn>$(NoWarn);CS8524</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <!-- internal means "this assembly only", except for the tests, which may see it too. -->

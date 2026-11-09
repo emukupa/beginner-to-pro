@@ -19,5 +19,19 @@ public class UrgentTask : Task
     public override string ToString() => base.ToString() + "  !!";
 }
 
+// The statuses a command can set. A task read from the file keeps whatever word it had, as a string.
+public enum Status { Todo, Done }
+
+public static class StatusWords
+{
+    // An extension method: status.Word() reads as if Status had it. The switch expression must
+    // cover every member: add one to the enum and the build stops here (CS8509).
+    public static string Word(this Status status) => status switch
+    {
+        Status.Todo => "todo",
+        Status.Done => "done",
+    };
+}
+
 // A record: a tag and how many tasks carry it.
 public record TagCount(string Tag, int Count);

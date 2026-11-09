@@ -23,7 +23,7 @@ Each step is a video, and each video points at a branch you can check out.
 | Rust | [`rust/`](rust/) | ready | ready | ready | ready | ready |
 | Go | [`go/`](go/) | ready | ready | ready | ready | ready |
 | TypeScript (Node) | [`node/`](node/) | ready | ready | ready | ready | ready |
-| C# | [`csharp/`](csharp/) | ready | ready | ready | ready | planned |
+| C# | [`csharp/`](csharp/) | ready | ready | ready | ready | ready |
 | Java | [`java/`](java/) | ready | planned | planned | planned | planned |
 | Kotlin | [`kotlin/`](kotlin/) | planned | planned | planned | planned | planned |
 | Swift | [`swift/`](swift/) | ready | planned | planned | planned | planned |

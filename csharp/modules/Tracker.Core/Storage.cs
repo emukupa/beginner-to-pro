@@ -1,6 +1,7 @@
 // The tasks file: the only file that opens files.
 using System.Text;
 using System.Text.RegularExpressions;
+using Tracker.Models; // for status.Word(), an extension method: it must be imported to be found
 
 namespace Tracker;
 
@@ -22,8 +23,8 @@ public static class Storage
     static bool Holds(string line, Models.Task task) =>
         Parsing.ParseLine(line) is { } found && found.Title == task.Title && found.Status == task.Status;
 
-    // Rewrites the line holding this task as [done], leaving every other byte of the file alone.
-    public static void MarkDone(string path, Models.Task task)
+    // Rewrites the line holding this task as [status], leaving every other byte of the file alone.
+    public static void SetStatus(string path, Models.Task task, Models.Status status)
     {
         // Each line keeps its own ending (\n, \r\n or \r), as Python's readlines() does with newline="".
         var lines = Regex.Matches(File.ReadAllText(path), @"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$")
@@ -33,7 +34,7 @@ public static class Storage
         {
             string line = lines[at];
             int open = line.IndexOf('['), close = line.IndexOf(']', open);
-            lines[at] = $"{line[..open]}[done]{line[(close + 1)..]}"; // spaces before, title and ending after
+            lines[at] = $"{line[..open]}[{status.Word()}]{line[(close + 1)..]}"; // spaces before, title and ending after
         }
 
         using var temp = new TempFile(path); // disposed at the end of this method, however it ends

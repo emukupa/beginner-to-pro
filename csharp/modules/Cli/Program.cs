@@ -10,7 +10,7 @@ using Tracker.Models;
 
 Console.OutputEncoding = new UTF8Encoding(false);
 
-if (args is ["done", .. var words]) return Commands.Done(words); // a second mode: tracker done "title"
+if (args is [var name, .. var words] && Commands.Changes.ContainsKey(name)) return Commands.Change(name, words); // tracker done|undo "title"
 
 string path = args.Length > 0 ? args[0] : Environment.GetEnvironmentVariable("TASKS_FILE") ?? "tasks.txt";
 
@@ -67,15 +67,26 @@ Console.WriteLine("\nTop tags");
 Chart.Draw(Console.Out, pairs);
 return 0;
 
-// tracker done "title": marks one task finished. Returns the exit code.
+// What a status command does: the status it sets, and what it prints. A record per command.
+record Change(Status Sets, string Changed, string Already);
+
+// tracker done|undo "title": sets one task's status. Returns the exit code.
 static class Commands
 {
-    public static int Done(string[] words)
+    // Python's CHANGES dict: the command words are the keys.
+    public static readonly Dictionary<string, Change> Changes = new()
     {
+        ["done"] = new(Status.Done, "Done", "Already done"),
+        ["undo"] = new(Status.Todo, "Undone", "Not done yet"),
+    };
+
+    public static int Change(string name, string[] words)
+    {
+        var (sets, changed, already) = Changes[name];
         string title = Text.Strip(string.Join(' ', words));
         if (title == "")
         {
-            Console.Error.WriteLine("Usage: done \"task title\"");
+            Console.Error.WriteLine($"Usage: {name} \"task title\"");
             return 2;
         }
         string path = Environment.GetEnvironmentVariable("TASKS_FILE") ?? "tasks.txt";
@@ -99,21 +110,21 @@ static class Commands
             Console.Error.WriteLine($"No task called \"{title}\"");
             return 1;
         }
-        if (task.IsDone)
+        if (task.Status == sets.Word())
         {
-            Console.WriteLine($"Already done: {task.Title}");
+            Console.WriteLine($"{already}: {task.Title}");
             return 0;
         }
         try
         {
-            Storage.MarkDone(path, task);
+            Storage.SetStatus(path, task, sets);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
             Console.Error.WriteLine($"Couldn't write {path}");
             return 1;
         }
-        Console.WriteLine($"Done: {task.Title}");
+        Console.WriteLine($"{changed}: {task.Title}");
         return 0;
     }
 }
