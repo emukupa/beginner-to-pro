@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"errors"
 	"slices"
+	"strings"
 
 	"github.com/emukupa/beginner-to-pro/go/modules/internal/models"
 	"github.com/emukupa/beginner-to-pro/go/modules/internal/parsing"
@@ -21,6 +22,18 @@ func Add(tasks []models.Task, titles []string) ([]models.Task, int) {
 		}
 	}
 	return tasks, added
+}
+
+// Find returns the first task whose title matches, ignoring case and extra spaces, or nil if there
+// isn't one. The pointer points into the slice: no copy is made.
+func Find(tasks []models.Task, title string) *models.Task {
+	wanted := strings.ToLower(strings.Join(strings.Fields(title), " "))
+	for i := range tasks {
+		if strings.ToLower(tasks[i].Title) == wanted {
+			return &tasks[i]
+		}
+	}
+	return nil
 }
 
 type TagCount struct {

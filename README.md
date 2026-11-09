@@ -21,7 +21,7 @@ Each step is a video, and each video points at a branch you can check out.
 | Zig | [`zig/`](zig/) | ready | ready | ready | ready | ready |
 | C++ | [`cpp/`](cpp/) | ready | ready | ready | ready | ready |
 | Rust | [`rust/`](rust/) | ready | ready | ready | ready | ready |
-| Go | [`go/`](go/) | ready | ready | ready | planned | planned |
+| Go | [`go/`](go/) | ready | ready | ready | ready | planned |
 | TypeScript (Node) | [`node/`](node/) | ready | planned | planned | planned | planned |
 
 The plan for every language is in [docs/languages.md](docs/languages.md).

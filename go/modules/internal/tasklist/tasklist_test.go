@@ -38,3 +38,13 @@ func TestTopNWorksForAnyType(t *testing.T) {
 		t.Errorf("TopN = %v", got)
 	}
 }
+
+func TestFindIgnoresCaseAndSpaces(t *testing.T) {
+	tasks := load("[todo] Review pull request #work")
+	if got := Find(tasks, "  review PULL   request "); got == nil || got.Title != "Review pull request" {
+		t.Errorf("Find = %v", got)
+	}
+	if got := Find(tasks, "Walk dog"); got != nil {
+		t.Errorf("Find(Walk dog) = %v, want nil", got)
+	}
+}

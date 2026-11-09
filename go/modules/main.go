@@ -66,7 +66,47 @@ func parseWholeNumber(text string) (int, bool) {
 	return value, true
 }
 
+// doneCommand runs "tracker done title": it marks one task finished, and returns the exit code.
+func doneCommand(words []string) int {
+	title := strings.TrimSpace(strings.Join(words, " "))
+	if title == "" {
+		fmt.Fprintln(os.Stderr, `Usage: done "task title"`)
+		return 2
+	}
+	path, set := os.LookupEnv("TASKS_FILE")
+	if !set {
+		path = "tasks.txt"
+	}
+	tasks, err := storage.Load(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		fmt.Fprintf(os.Stderr, "Couldn't find %s\n", path)
+		return 1
+	} else if err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't read %s\n", path)
+		return 1
+	}
+	task := tasklist.Find(tasks, title)
+	if task == nil {
+		fmt.Fprintf(os.Stderr, "No task called \"%s\"\n", title) // not %q: that would escape quotes inside
+		return 1
+	}
+	if task.IsDone() {
+		fmt.Printf("Already done: %s\n", task.Title)
+		return 0
+	}
+	if err := storage.MarkDone(path, *task); err != nil {
+		fmt.Fprintf(os.Stderr, "Couldn't write %s\n", path)
+		return 1
+	}
+	fmt.Printf("Done: %s\n", task.Title)
+	return 0
+}
+
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "done" { // a second mode: tracker done "title"
+		os.Exit(doneCommand(os.Args[2:]))
+	}
+
 	path, set := os.LookupEnv("TASKS_FILE") // set but empty is still set, as in Python
 	if !set {
 		path = "tasks.txt"
