@@ -11,6 +11,7 @@ import tracker.models.TagCount
 import tracker.models.UrgentTask
 import tracker.parsing.parseLine
 import tracker.parsing.statusOf
+import tracker.tasklist.findTask
 import tracker.tasklist.summarize
 import tracker.tasklist.topTags
 
@@ -53,5 +54,12 @@ class TrackerTest {
         val lines = mutableListOf<String>()
         drawChart(listOf(TagCount("home", 2), TagCount("work", 1)), width = 4) { lines += it }
         assertEquals(listOf("home  ████ 2", "work  ██ 1"), lines)
+    }
+
+    @Test
+    fun findsAMessyTitle() {
+        val tasks = load("[todo] Review pull request #work")
+        assertEquals("Review pull request", findTask(tasks, "  review PULL   request ")?.title)
+        assertNull(findTask(tasks, "Walk dog"))
     }
 }

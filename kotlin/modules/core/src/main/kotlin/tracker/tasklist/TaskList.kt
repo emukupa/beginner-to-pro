@@ -5,6 +5,7 @@ import kotlin.math.round
 import tracker.models.TagCount
 import tracker.models.Task
 import tracker.parsing.parseLine
+import tracker.text.pythonWords
 
 const val DEFAULT_TOP = 3
 
@@ -13,6 +14,12 @@ fun addTasks(tasks: MutableList<Task>, titles: List<String>): Int {
     val added = titles.mapNotNull { parseLine("[todo] $it") }
     tasks += added
     return added.size
+}
+
+// The first task whose title matches, ignoring case and extra spaces; null if there isn't one.
+fun findTask(tasks: List<Task>, title: String): Task? {
+    val wanted = title.pythonWords().joinToString(" ").lowercase()
+    return tasks.firstOrNull { it.title.lowercase() == wanted }
 }
 
 // mutableMapOf() keeps the order keys were first put in, so first-seen order is free.
