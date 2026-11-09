@@ -33,6 +33,7 @@ dotnet test && dotnet build Cli -c Release -o build && ../../contract/run.sh "$P
 | [01 One file](chapters/01-one-file/CHAPTER.md) | `course/csharp/01-one-file/start` | `course/csharp/01-one-file/end` | `video/csharp-001` |
 | [02 Modules](chapters/02-modules/CHAPTER.md) | `course/csharp/02-modules/start` | `course/csharp/02-modules/end` | `video/csharp-002` |
 | [03 Done](chapters/03-done/CHAPTER.md) | `course/csharp/03-done/start` | `course/csharp/03-done/end` | `video/csharp-003` |
+| [04 Undo](chapters/04-undo/CHAPTER.md) | `course/csharp/04-undo/start` | `course/csharp/04-undo/end` | `video/csharp-004` |
 
 VS Code: install the **C# Dev Kit** extension (it brings the C# extension with it). It runs the same
 compiler as `dotnet build` as you type, so nullable warnings and missing `switch` cases show up
