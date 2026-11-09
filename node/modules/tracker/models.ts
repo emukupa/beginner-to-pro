@@ -2,6 +2,10 @@
 //
 // Nothing in a module is visible outside it unless it says `export`.
 
+// The statuses a command can set. A string literal type: the status is its own spelling, and only
+// these two words fit. (A task read from the file keeps whatever word it had: its status is a string.)
+export type Status = "todo" | "done";
+
 export class Task {
   readonly title: string;
   readonly status: string;

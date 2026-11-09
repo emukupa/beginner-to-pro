@@ -3,7 +3,7 @@
 import { appendFileSync, closeSync, fchmodSync, fsyncSync, openSync, readFileSync, renameSync, rmSync, statSync, writeSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 
-import type { Task } from "./models.ts"; // only used as a type: `import type` says so, and Node erases it
+import type { Status, Task } from "./models.ts"; // only used as a type: `import type` says so, and Node erases it
 import { parseLine } from "./parsing.ts";
 
 // Every task in the file; lines that aren't tasks are skipped. Lines end at \n, \r\n or \r, as when
@@ -53,8 +53,8 @@ function holds(line: string, task: Task): boolean {
   return found !== null && found.title === task.title && found.status === task.status;
 }
 
-// Rewrites the line holding this task as [done], leaving every other byte of the file alone.
-export function markDone(path: string, task: Task): void {
+// Rewrites the line holding this task as [status], leaving every other byte of the file alone.
+export function setStatus(path: string, task: Task, status: Status): void {
   // Each line keeps its own ending (\n, \r\n or \r), as Python's readlines() does with newline="".
   const lines = readFileSync(path, "utf8").match(/[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+$/g) ?? [];
   const at = lines.findIndex((line) => holds(line, task));
@@ -62,7 +62,7 @@ export function markDone(path: string, task: Task): void {
   if (line !== undefined) {
     const open = line.indexOf("[");
     const close = line.indexOf("]", open);
-    lines[at] = `${line.slice(0, open)}[done]${line.slice(close + 1)}`; // spaces before, title and ending after
+    lines[at] = `${line.slice(0, open)}[${status}]${line.slice(close + 1)}`; // spaces before, title and ending after
   }
 
   using temp = new TempFile(path);

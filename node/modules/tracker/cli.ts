@@ -10,9 +10,9 @@
 
 import { createInterface } from "node:readline";
 
-import { UrgentTask } from "./models.ts";
+import { UrgentTask, type Status } from "./models.ts";
 import { TAG_MARKER } from "./parsing.ts";
-import { appendTitles, loadTasks, markDone } from "./storage.ts";
+import { appendTitles, loadTasks, setStatus } from "./storage.ts";
 import { addTasks, DEFAULT_TOP, findTask, summarize, topTags, type Pair } from "./tasklist.ts";
 import { drawChart } from "./chart.ts";
 import { strip } from "./text.ts";
@@ -35,11 +35,29 @@ function parseWholeNumber(text: string): number | null {
   return Math.min(Number(digits.replaceAll("_", "")), 2 ** 31) * (sign === "-" ? -1 : 1);
 }
 
-// tracker done "title": marks one task finished. Returns the exit code.
-function doneCommand(words: readonly string[]): number {
+// What a status command does: the status it sets, and what it prints.
+type Change = { readonly sets: Status; readonly changed: string; readonly already: string };
+
+// Python's CHANGES dict. `as const` keeps the exact words; `satisfies` checks every entry is a Change
+// without widening them, so a typo, or a status that isn't a Status, stops the type check.
+const CHANGES = {
+  done: { sets: "done", changed: "Done", already: "Already done" },
+  undo: { sets: "todo", changed: "Undone", already: "Not done yet" },
+} as const satisfies Record<string, Change>;
+
+type Command = keyof typeof CHANGES; // "done" | "undo", worked out from the table
+
+// A type guard: when it returns true, TypeScript knows `word` is a Command, not just a string.
+function isCommand(word: string | undefined): word is Command {
+  return word !== undefined && Object.hasOwn(CHANGES, word);
+}
+
+// tracker done|undo "title": sets one task's status. Returns the exit code.
+function changeCommand(name: Command, words: readonly string[]): number {
+  const change = CHANGES[name];
   const title = strip(words.join(" "));
   if (!title) {
-    console.error('Usage: done "task title"');
+    console.error(`Usage: ${name} "task title"`);
     return 2;
   }
   const path = process.env["TASKS_FILE"] ?? "tasks.txt";
@@ -56,22 +74,23 @@ function doneCommand(words: readonly string[]): number {
     console.error(`No task called "${title}"`);
     return 1;
   }
-  if (task.isDone()) {
-    console.log(`Already done: ${task.title}`);
+  if (task.status === change.sets) {
+    console.log(`${change.already}: ${task.title}`);
     return 0;
   }
   try {
-    markDone(path, task);
+    setStatus(path, task, change.sets);
   } catch {
     console.error(`Couldn't write ${path}`);
     return 1;
   }
-  console.log(`Done: ${task.title}`);
+  console.log(`${change.changed}: ${task.title}`);
   return 0;
 }
 
 async function main(): Promise<number> {
-  if (process.argv[2] === "done") return doneCommand(process.argv.slice(3)); // a second mode: tracker done "title"
+  const command = process.argv[2];
+  if (isCommand(command)) return changeCommand(command, process.argv.slice(3)); // tracker done|undo "title"
 
   const path = process.argv[2] ?? process.env["TASKS_FILE"] ?? "tasks.txt";
 
