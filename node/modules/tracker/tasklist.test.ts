@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { parseLine } from "./parsing.ts";
-import { topTags, summarize } from "./tasklist.ts";
+import { findTask, topTags, summarize } from "./tasklist.ts";
 import type { Task } from "./models.ts";
 
 const load = (...lines: string[]): Task[] => lines.map(parseLine).filter((t) => t !== null);
@@ -19,4 +19,10 @@ test("zero top tags is refused", () => {
 test("halves round to even", () => {
   const tasks = load("[done] a", ...Array.from({ length: 7 }, (_, i) => `[todo] t${i}`));
   assert.equal(summarize(tasks).percent, 12); // 12.5 -> 12, like Python's round()
+});
+
+test("finds a messy title", () => {
+  const tasks = load("[todo] Review pull request #work");
+  assert.equal(findTask(tasks, "  review PULL   request ")?.title, "Review pull request");
+  assert.equal(findTask(tasks, "Walk dog"), undefined);
 });

@@ -2,7 +2,7 @@
 
 import type { Task } from "./models.ts";
 import { parseLine } from "./parsing.ts";
-import { roundHalfEven } from "./text.ts";
+import { roundHalfEven, words } from "./text.ts";
 
 export const DEFAULT_TOP = 3; // top tags shown when the answer is empty or invalid
 
@@ -17,6 +17,12 @@ export function addTasks(tasks: Task[], titles: readonly string[]): number {
     }
   }
   return added;
+}
+
+// The first task whose title matches, ignoring case and extra spaces; undefined if there isn't one.
+export function findTask(tasks: readonly Task[], title: string): Task | undefined {
+  const wanted = words(title).join(" ").toLowerCase();
+  return tasks.find((task) => task.title.toLowerCase() === wanted);
 }
 
 // A Map keeps keys in the order they were first added, like a Python dict, so first-seen order is free.

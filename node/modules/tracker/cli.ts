@@ -12,8 +12,8 @@ import { createInterface } from "node:readline";
 
 import { UrgentTask } from "./models.ts";
 import { TAG_MARKER } from "./parsing.ts";
-import { appendTitles, loadTasks } from "./storage.ts";
-import { addTasks, DEFAULT_TOP, summarize, topTags, type Pair } from "./tasklist.ts";
+import { appendTitles, loadTasks, markDone } from "./storage.ts";
+import { addTasks, DEFAULT_TOP, findTask, summarize, topTags, type Pair } from "./tasklist.ts";
 import { drawChart } from "./chart.ts";
 import { strip } from "./text.ts";
 
@@ -35,7 +35,44 @@ function parseWholeNumber(text: string): number | null {
   return Math.min(Number(digits.replaceAll("_", "")), 2 ** 31) * (sign === "-" ? -1 : 1);
 }
 
+// tracker done "title": marks one task finished. Returns the exit code.
+function doneCommand(words: readonly string[]): number {
+  const title = strip(words.join(" "));
+  if (!title) {
+    console.error('Usage: done "task title"');
+    return 2;
+  }
+  const path = process.env["TASKS_FILE"] ?? "tasks.txt";
+  let tasks;
+  try {
+    tasks = loadTasks(path);
+  } catch (error) {
+    const code = error instanceof Error && "code" in error ? error.code : undefined;
+    console.error(code === "ENOENT" ? `Couldn't find ${path}` : `Couldn't read ${path}`);
+    return 1;
+  }
+  const task = findTask(tasks, title);
+  if (!task) {
+    console.error(`No task called "${title}"`);
+    return 1;
+  }
+  if (task.isDone()) {
+    console.log(`Already done: ${task.title}`);
+    return 0;
+  }
+  try {
+    markDone(path, task);
+  } catch {
+    console.error(`Couldn't write ${path}`);
+    return 1;
+  }
+  console.log(`Done: ${task.title}`);
+  return 0;
+}
+
 async function main(): Promise<number> {
+  if (process.argv[2] === "done") return doneCommand(process.argv.slice(3)); // a second mode: tracker done "title"
+
   const path = process.argv[2] ?? process.env["TASKS_FILE"] ?? "tasks.txt";
 
   let tasks;
