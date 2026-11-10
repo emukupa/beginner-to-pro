@@ -1,0 +1,163 @@
+name: Contract
+
+# Every version in every language must match the Python tracker byte for byte (contract/README.md).
+# One job per language: `make contract L=<lang>`, the same target `make check` runs locally.
+# Run it locally with `make ci` (act; .actrc picks the runner image).
+
+on:
+  push:
+    branches: [main, course/authoring]
+  pull_request:
+
+# A newer push to the same branch makes the running checks moot.
+concurrency:
+  group: contract-${{ github.ref }}
+  cancel-in-progress: true
+
+# Toolchain pins: what each language's README says the course was written with. Never "latest".
+# Change one here, then run `make contract L=<lang>` on that version before committing.
+# Actions are pinned to exact versions; dtolnay/rust-toolchain has no releases, so to a commit.
+# The runner too: moving off ubuntu-24.04 is a deliberate change.
+env:
+  PYTHON_VERSION: "3.15.2"
+  # Major version only: apt.llvm.org's llvm-toolchain-noble-21 channel replaces its point
+  # releases, so an exact one can't be pinned there. 21 matches the Apple clang 21 the C and C++
+  # chapters were written with.
+  LLVM_VERSION: "21"
+  C3C_VERSION: "0.8.5"
+  C3C_SHA256: 9dbea7536564a75967498c37b03af0050a5e708578ee9f5a8e7e9120b35bd701
+  ZIG_VERSION: "0.16.0"
+  ZIG_SHA256: 70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00
+  RUST_VERSION: "1.97.1"
+  GO_VERSION: "1.27.1"
+  NODE_VERSION: "24.19.0"
+  DOTNET_VERSION: "10.0.400"
+  # Temurin. Kotlin runs on the same JDK.
+  JAVA_VERSION: "27.0.1"
+  KOTLIN_VERSION: "2.4.20"
+  KOTLIN_SHA256: 59e9ca74c7904ef2c122b12114937673ccce68de820a663f0ed66ccf8799e0b7
+  # swift.org publishes signatures, not checksums, for its tarballs; this one comes over HTTPS.
+  SWIFT_VERSION: "6.4.2"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+
+jobs:
+  contract:
+    name: ${{ matrix.language }}
+    runs-on: ubuntu-24.04
+    strategy:
+      # One language failing says nothing about the others: let every job finish.
+      fail-fast: false
+      matrix:
+        language: [python, c, c3, zig, cpp, rust, go, node, csharp, java, kotlin, swift]
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      # Downloaded toolchains go to ~/toolchains, then onto PATH.
+      - name: Prepare
+        run: mkdir -p "$HOME/toolchains"
+
+      - if: matrix.language == 'python'
+        uses: actions/setup-python@v7.1.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # C and C++: clang with AddressSanitizer and UBSan (compiler-rt), and libc++ for C++23's
+      # <print>, <expected> and std::ranges::to.
+      - if: matrix.language == 'c' || matrix.language == 'cpp'
+        name: Install clang ${{ env.LLVM_VERSION }} (apt.llvm.org)
+        run: |
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${LLVM_VERSION} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update -q
+          v="$LLVM_VERSION"
+          sudo apt-get install -y -q make "clang-$v" "libclang-rt-$v-dev" "libc++-$v-dev" "libc++abi-$v-dev"
+          echo "CC=clang-${LLVM_VERSION}" >> "$GITHUB_ENV"
+          echo "CPP_CXX=clang++-${LLVM_VERSION} -stdlib=libc++" >> "$GITHUB_ENV"
+
+      - if: matrix.language == 'c3'
+        name: Install c3c ${{ env.C3C_VERSION }}
+        run: |
+          curl -fsSL -o /tmp/c3.tar.gz "https://github.com/c3lang/c3c/releases/download/v${C3C_VERSION}/c3-linux.tar.gz"
+          echo "${C3C_SHA256}  /tmp/c3.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/c3.tar.gz -C "$HOME/toolchains"
+          echo "$HOME/toolchains/c3" >> "$GITHUB_PATH"
+          "$HOME/toolchains/c3/c3c" --version
+
+      - if: matrix.language == 'zig'
+        name: Install Zig ${{ env.ZIG_VERSION }}
+        run: |
+          curl -fsSL -o /tmp/zig.tar.xz "https://ziglang.org/download/${ZIG_VERSION}/zig-x86_64-linux-${ZIG_VERSION}.tar.xz"
+          echo "${ZIG_SHA256}  /tmp/zig.tar.xz" | sha256sum -c -
+          tar -xJf /tmp/zig.tar.xz -C "$HOME/toolchains"
+          echo "$HOME/toolchains/zig-x86_64-linux-${ZIG_VERSION}" >> "$GITHUB_PATH"
+
+      - if: matrix.language == 'rust'
+        uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+
+      - if: matrix.language == 'go'
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+
+      - if: matrix.language == 'node'
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - if: matrix.language == 'csharp'
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - if: matrix.language == 'java' || matrix.language == 'kotlin'
+        uses: actions/setup-java@v6.1.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - if: matrix.language == 'kotlin'
+        name: Install kotlinc ${{ env.KOTLIN_VERSION }}
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip "https://github.com/JetBrains/kotlin/releases/download/v${KOTLIN_VERSION}/kotlin-compiler-${KOTLIN_VERSION}.zip"
+          echo "${KOTLIN_SHA256}  /tmp/kotlin.zip" | sha256sum -c -
+          unzip -q /tmp/kotlin.zip -d "$HOME/toolchains"
+          echo "$HOME/toolchains/kotlinc/bin" >> "$GITHUB_PATH"
+
+      # The runner image carries an older Swift; this one goes first on PATH. The packages are
+      # swift.org's list for Ubuntu 24.04.
+      - if: matrix.language == 'swift'
+        name: Install Swift ${{ env.SWIFT_VERSION }}
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q binutils git gnupg2 libc6-dev libcurl4-openssl-dev libedit2 \
+            libgcc-13-dev libncurses-dev libpython3-dev libsqlite3-0 libstdc++-13-dev libxml2-dev \
+            libz3-dev make pkg-config tzdata unzip zlib1g-dev
+          name="swift-${SWIFT_VERSION}-RELEASE-ubuntu24.04"
+          curl -fsSL -o /tmp/swift.tar.gz \
+            "https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu2404/swift-${SWIFT_VERSION}-RELEASE/${name}.tar.gz"
+          tar -xzf /tmp/swift.tar.gz -C "$HOME/toolchains"
+          echo "$HOME/toolchains/${name}/usr/bin" >> "$GITHUB_PATH"
+
+      - name: Toolchain
+        run: |
+          case "${{ matrix.language }}" in
+            python) python3 --version ;;
+            c)      "$CC" --version ;;
+            cpp)    "${CPP_CXX%% *}" --version ;;
+            c3)     c3c --version ;;
+            zig)    zig version ;;
+            rust)   cargo --version ;;
+            go)     go version ;;
+            node)   node --version ;;
+            csharp) dotnet --version ;;
+            java)   java -version ;;
+            kotlin) kotlinc -version ;;
+            swift)  swift --version ;;
+          esac
+
+      - name: Contract
+        run: make contract L=${{ matrix.language }}
