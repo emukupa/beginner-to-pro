@@ -5,8 +5,8 @@ is copied, never shared), enums that carry data like Rust's, optionals instead o
 and `defer` like Zig's, and no garbage collector, with automatic reference counting freeing each
 object the moment nothing refers to it. Swift 6 language mode makes data races compile errors, and
 the package treats warnings as errors. Needs Swift 6.2 or later with the Swift Package
-Manager (written with Swift 6.4.2, from Xcode on macOS; on Linux, install from
-[swift.org](https://www.swift.org/install/)).
+Manager (written with Swift 6.4.2, from Xcode on macOS). The `modules/` package writes the task
+file with `Darwin.write`, so it builds on macOS only; on Linux it would need `Glibc.write`.
 
 | Folder | What | Chapter |
 | --- | --- | --- |
