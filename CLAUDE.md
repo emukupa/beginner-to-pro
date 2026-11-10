@@ -72,7 +72,7 @@ kotlin swift.
 
 ## Not this repo
 
-- The video studio, `../python-beginner-to-pro`, is a separate tree: scripts, voice, renders and
+- The video studio, `../polyglot-code`, is a separate tree: scripts, voice, renders and
   its `LOG.md`. Nothing here depends on it, and changes there don't belong in commits here.
 
 ## Conventions
