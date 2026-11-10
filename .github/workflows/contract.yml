@@ -44,7 +44,10 @@ env:
 jobs:
   contract:
     name: ${{ matrix.language }}
-    runs-on: ubuntu-24.04
+    # Swift runs on macOS: the course's Swift writes the task file with Darwin.write, which only
+    # exists on Apple platforms, and it was written and recorded on a Mac. Every other language
+    # runs on Linux.
+    runs-on: ${{ matrix.language == 'swift' && 'macos-15' || 'ubuntu-24.04' }}
     strategy:
       # One language failing says nothing about the others: let every job finish.
       fail-fast: false
@@ -127,20 +130,17 @@ jobs:
           unzip -q /tmp/kotlin.zip -d "$HOME/toolchains"
           echo "$HOME/toolchains/kotlinc/bin" >> "$GITHUB_PATH"
 
-      # The runner image carries an older Swift; this one goes first on PATH. The packages are
-      # swift.org's list for Ubuntu 24.04.
+      # swift.org's toolchain package for macOS, selected with TOOLCHAINS so swift and SwiftPM
+      # use it instead of the Xcode one on the runner.
       - if: matrix.language == 'swift'
         name: Install Swift ${{ env.SWIFT_VERSION }}
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q binutils git gnupg2 libc6-dev libcurl4-openssl-dev libedit2 \
-            libgcc-13-dev libncurses-dev libpython3-dev libsqlite3-0 libstdc++-13-dev libxml2-dev \
-            libz3-dev make pkg-config tzdata unzip zlib1g-dev
-          name="swift-${SWIFT_VERSION}-RELEASE-ubuntu24.04"
-          curl -fsSL -o /tmp/swift.tar.gz \
-            "https://download.swift.org/swift-${SWIFT_VERSION}-release/ubuntu2404/swift-${SWIFT_VERSION}-RELEASE/${name}.tar.gz"
-          tar -xzf /tmp/swift.tar.gz -C "$HOME/toolchains"
-          echo "$HOME/toolchains/${name}/usr/bin" >> "$GITHUB_PATH"
+          name="swift-${SWIFT_VERSION}-RELEASE"
+          curl -fsSL -o /tmp/swift.pkg \
+            "https://download.swift.org/swift-${SWIFT_VERSION}-release/xcode/${name}/${name}-osx.pkg"
+          sudo installer -pkg /tmp/swift.pkg -target /
+          plist="/Library/Developer/Toolchains/${name}.xctoolchain/Info.plist"
+          echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw "$plist")" >> "$GITHUB_ENV"
 
       - name: Toolchain
         run: |
