@@ -6,7 +6,7 @@ import TrackerCore
 // Python's input(): shows the prompt, reads up to the next \n. An empty line at the end of input.
 func ask(_ prompt: String) -> String {
     print(prompt, terminator: "")
-    fflush(stdout)
+    fflush(nil) // every output stream: stdout itself is a C global, which Swift 6 won't touch
     var bytes: [UInt8] = []
     while case let c = getchar(), c != EOF, c != 10 { bytes.append(UInt8(c)) }
     return String(decoding: bytes, as: UTF8.self)
