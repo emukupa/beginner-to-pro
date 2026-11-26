@@ -49,6 +49,12 @@ public enum WriteError: Error {
     case cantWrite
 }
 
+// write(2), the C function, on macOS and Linux alike. Out here because inside TempFile the name
+// write means its own method.
+private func writeFile(_ fd: Int32, _ bytes: UnsafeRawBufferPointer) -> Int {
+    write(fd, bytes.baseAddress, bytes.count)
+}
+
 // A new file beside another, deleted when it goes away unless it replaced the other.
 // ~Copyable: a TempFile can't be copied, only moved, so exactly one owner ever holds the file,
 // and its deinit runs exactly once, when that owner is done: at the end of the scope, however it
@@ -73,7 +79,7 @@ struct TempFile: ~Copyable {
     func write(_ bytes: [UInt8]) throws(WriteError) {
         var written = 0
         while written < bytes.count {
-            let n = bytes[written...].withUnsafeBytes { Darwin.write(fd, $0.baseAddress, $0.count) }
+            let n = bytes[written...].withUnsafeBytes { writeFile(fd, $0) }
             guard n > 0 else { throw .cantWrite }
             written += n
         }
