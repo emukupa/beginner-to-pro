@@ -23,7 +23,7 @@ fun run() {
     println("\"%.0f\".format(12.5) = ${"%.0f".format(12.5)}, roundHalfEven(12.5) = ${roundHalfEven(12.5)}")
     // An Int that overflows wraps round without a word, as in Java. Math.addExact refuses instead.
     println("Int.MAX_VALUE + 1 = ${Int.MAX_VALUE + 1}")
-    val sum = runCatching { Math.addExact(Int.MAX_VALUE, 1) } // runCatching: lesson 12
+    val sum = runCatching { Math.addExact(Int.MAX_VALUE, 1) } // runCatching: lesson 11
     println("Math.addExact(Int.MAX_VALUE, 1) -> ${sum.exceptionOrNull()?.message}")
     // Conversions are always spelled out.
     val count = 2
