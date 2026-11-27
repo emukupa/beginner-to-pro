@@ -33,7 +33,8 @@ public class Tracker {
     static final int DEFAULT_TOP = 3; // top tags shown when the answer is empty or invalid
     static final String TAG_MARKER = "#"; // marks a word as a tag: "#work"
 
-    // UTF-8 for the bars whatever the system's locale says, with "\n" line endings.
+    // UTF-8 for the bars whatever the system's locale says. println ends each line with the system's
+    // line separator (System.lineSeparator()): "\n" on Linux and macOS, "\r\n" on Windows.
     static final PrintStream out = new PrintStream(new FileOutputStream(FileDescriptor.out), true, StandardCharsets.UTF_8);
     static final PrintStream err = new PrintStream(new FileOutputStream(FileDescriptor.err), true, StandardCharsets.UTF_8);
 
