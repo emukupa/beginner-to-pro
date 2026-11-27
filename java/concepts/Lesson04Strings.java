@@ -42,7 +42,8 @@ final class Lesson04Strings {
 
         String messy = "  done  "; //   is an em space, a Unicode space
         System.out.println("trim() -> \"" + messy.trim() + "\", strip() -> \"" + messy.strip() + "\"");
-        // trim() only knows the old ASCII spaces; strip() knows Unicode's. Neither is exactly Python's.
+        // trim() drops only characters up to U+0020; strip() drops Unicode whitespace too, but keeps
+        // no-break spaces (U+00A0), which Python's strip() drops. Neither is exactly Python's.
 
         String line = "[done.] Call mom  #family";
         int close = line.indexOf(']');

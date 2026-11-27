@@ -57,8 +57,13 @@ public final class Storage {
 
         // try-with-resources: temp.close() runs when the block ends, however it ends.
         try (TempFile temp = new TempFile(path)) {
-            Files.setPosixFilePermissions(temp.path, Files.getPosixFilePermissions(path)); // keep them
-            temp.channel.write(ByteBuffer.wrap(String.join("", lines).getBytes(StandardCharsets.UTF_8)));
+            // Windows has no POSIX permissions, so ask the file system before copying them.
+            if (path.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                Files.setPosixFilePermissions(temp.path, Files.getPosixFilePermissions(path)); // keep them
+            }
+            // One write may take fewer bytes than it was given, so write until none are left.
+            ByteBuffer bytes = ByteBuffer.wrap(String.join("", lines).getBytes(StandardCharsets.UTF_8));
+            while (bytes.hasRemaining()) temp.channel.write(bytes);
             temp.replace(path);
         }
     }
@@ -73,7 +78,13 @@ public final class Storage {
         TempFile(Path beside) throws IOException {
             Path folder = beside.toAbsolutePath().getParent();
             path = Files.createTempFile(folder, beside.getFileName() + ".", "");
-            channel = FileChannel.open(path, StandardOpenOption.WRITE);
+            try {
+                channel = FileChannel.open(path, StandardOpenOption.WRITE);
+            } catch (IOException e) {
+                // close() never runs for an object that failed to build, so delete the new file here.
+                try { Files.deleteIfExists(path); } catch (IOException also) { e.addSuppressed(also); }
+                throw e;
+            }
         }
 
         // On the disk first, then moved over the target: readers see the old file or the new one.
