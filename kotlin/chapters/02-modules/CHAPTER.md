@@ -29,8 +29,8 @@ The first `./gradlew` downloads Gradle itself and the Kotlin plugin; after that 
   with (9.7.1), so nobody needs to install Gradle.
 - **`kotlin.test` on JUnit 5.** `core/src/test/kotlin/` holds the tests: `@Test` functions with
   `assertEquals`, `assertIs` (which also casts), `assertNull` and `assertFailsWith`.
-- **Warnings are errors** in both modules (`allWarningsAsErrors`), and both target JVM 25: the newest
-  target Kotlin 2.4 knows.
+- **Warnings are errors** in both modules (`allWarningsAsErrors`), and both target JVM 25, which any newer
+  JDK runs (Kotlin 2.4 can target up to 26).
 - **Dependencies point one way.** Gradle refuses a cycle between modules, but packages inside one
   module can use each other in a circle, so the rule from Python's chapter 02 is ours to keep there.
 
