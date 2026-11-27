@@ -40,8 +40,13 @@ fun setStatus(path: Path, task: Task, status: Status) {
     // use {} closes the TempFile when the block ends, however it ends. It isn't a keyword: it's an
     // inline function the standard library defines on anything AutoCloseable.
     TempFile(path).use { temp ->
-        temp.path.setPosixFilePermissions(path.getPosixFilePermissions()) // keep the old file's
-        temp.channel.write(java.nio.ByteBuffer.wrap(lines.joinToString("").toByteArray()))
+        // Windows has no POSIX permissions, so ask the file system before copying them.
+        if ("posix" in path.fileSystem.supportedFileAttributeViews()) {
+            temp.path.setPosixFilePermissions(path.getPosixFilePermissions()) // keep the old file's
+        }
+        // One write may take fewer bytes than it was given, so write until none are left.
+        val bytes = java.nio.ByteBuffer.wrap(lines.joinToString("").toByteArray())
+        while (bytes.hasRemaining()) temp.channel.write(bytes)
         temp.replace(path)
     }
 }
@@ -50,7 +55,14 @@ fun setStatus(path: Path, task: Task, status: Status) {
 private class TempFile(beside: Path) : AutoCloseable {
     // createTempFile picks a random name and refuses to reuse a file that's already there.
     val path: Path = Files.createTempFile(beside.toAbsolutePath().parent, "${beside.fileName}.", "")
-    val channel: FileChannel = FileChannel.open(path, StandardOpenOption.WRITE)
+    // close() never runs for an object that failed to build, so if opening fails the new file is
+    // deleted here.
+    val channel: FileChannel = try {
+        FileChannel.open(path, StandardOpenOption.WRITE)
+    } catch (e: java.io.IOException) {
+        Files.deleteIfExists(path)
+        throw e
+    }
     private var kept = false
 
     // On the disk first, then moved over the target: readers see the old file or the new one.
