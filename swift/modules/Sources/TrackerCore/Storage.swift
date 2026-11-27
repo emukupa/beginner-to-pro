@@ -65,10 +65,14 @@ struct TempFile: ~Copyable {
     private var kept = false
 
     // O_EXCL: fail if the file already exists, so a random name can't be anyone else's file.
+    // The check comes before the last property is set: a TempFile that never finished building
+    // has no deinit to run, so a failed open can't unlink the file that was already there.
     init(beside target: String) throws(WriteError) {
-        path = "\(target).\(String(UInt64.random(in: 0...UInt64.max), radix: 16))"
-        fd = open(path, O_WRONLY | O_CREAT | O_EXCL, 0o600)
-        guard fd >= 0 else { throw .cantWrite }
+        let name = "\(target).\(String(UInt64.random(in: 0...UInt64.max), radix: 16))"
+        let opened = open(name, O_WRONLY | O_CREAT | O_EXCL, 0o600)
+        guard opened >= 0 else { throw .cantWrite }
+        path = name
+        fd = opened
     }
 
     func copyPermissions(from other: String) throws(WriteError) {
